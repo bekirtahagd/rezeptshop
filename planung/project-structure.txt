@@ -1,0 +1,49 @@
+# Projektstruktur: Webshop-Projekt (Monorepo)
+
+Unsere Dateistruktur verwaltet alle Webservices, Frontends und die Dokumentation zentral. Das Setup ist auf reine Node.js-Backend-Services und Vanilla HTML/CSS/JS-Frontends ausgelegt, genauso wie in der Aufgabe verlangt.
+
+```text
+webshop-projekt/
+│
+├── docker-compose.yml       # Das Herzstück: Startet alle Services & Datenbanken auf einmal
+├── README.md                # Kurze Anleitung zum Starten des Projekts
+│
+├── docs/                    # Projektdokumentation
+│   ├── architektur.png      # Architekturbild inkl. Datenflüsse & Ports
+│   ├── erm_diagramm.png     # Entity-Relationship-Model
+│   ├── mockup.pdf           # UI/UX Planung & Farbenschema
+│   └── benutzerhandbuch.pdf # Anleitung für Endanwender (Admins & normale User)
+│
+├── frontend/                # Die Benutzeroberflächen (Vanilla JS, HTML, CSS)
+│   │
+│   ├── admin-portal/        # Exklusive Oberfläche für Administratoren
+│   │   ├── Dockerfile       # Baut den Admin-Frontend-Container
+│   │   ├── src/             # HTML, CSS und JS für Produkt- und Userverwaltung
+│   │   └── public/          # Statische Assets (Bilder, Icons)
+│   │
+│   └── user-portal/         # Oberfläche für den normalen Endanwender
+│       ├── Dockerfile       # Baut den User-Frontend-Container
+│       ├── src/             # HTML, CSS und JS für Shop, Warenkorb und Wunschlisten
+│       └── public/          # Statische Assets (Bilder, Icons)
+│
+└── backend/                 # Die 5 Node.js Webservices
+    │
+    ├── auth-service/        # Authentifizierung (Registrierung, Login, Mails)
+    │   ├── Dockerfile
+    │   └── src/             # Controller, Modelle und Routen
+    │
+    ├── authorization-service/ # Autorisierung (Der "Türsteher" Endpoint)
+    │   ├── Dockerfile
+    │   └── src/
+    │
+    ├── inventory-service/   # Inventarsystem (Produkte, Warenkorb, Kaufen)
+    │   ├── Dockerfile
+    │   └── src/
+    │
+    ├── wishlist-service/    # Wunschlisten (Erstellen, Teilen, Berechtigungen)
+    │   ├── Dockerfile
+    │   └── src/
+    │
+    └── user-service/        # User-Verwaltung (Suchen, Sperren, Löschen für Admins)
+        ├── Dockerfile
+        └── src/
