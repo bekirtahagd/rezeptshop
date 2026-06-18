@@ -8,3 +8,7 @@ npm-debug.log
 # Betriebssystem-Müll
 .DS_Store
 Thumbs.db
+
+# Claude Code
+.claude/
+CLAUDE.md
