@@ -1,0 +1,22 @@
+meta {
+  name: CHECK - tom schreibt Lieblingsrezepte mit Write-Recht (allowed: true)
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{authorizationBaseUrl}}/api/authorization/check
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": 4,
+    "role": "user",
+    "resourceType": "wishlist",
+    "resourceId": 1,
+    "ownerId": 2,
+    "action": "write"
+  }
+}

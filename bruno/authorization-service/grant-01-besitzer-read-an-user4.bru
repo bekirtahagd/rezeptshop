@@ -1,0 +1,23 @@
+meta {
+  name: GRANT - max gibt Read-Recht an gesperrt auf Weihnachtsbäckerei (erlaubt)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{authorizationBaseUrl}}/api/authorization/grant
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "requesterId": 2,
+    "requesterRole": "user",
+    "targetUserId": 5,
+    "resourceId": 2,
+    "resourceType": "wishlist",
+    "ownerId": 2,
+    "permission": "read"
+  }
+}

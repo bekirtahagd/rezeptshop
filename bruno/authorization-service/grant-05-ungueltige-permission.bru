@@ -1,0 +1,23 @@
+meta {
+  name: GRANT - Ungueltige Permission (400 erwartet)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{authorizationBaseUrl}}/api/authorization/grant
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "requesterId": 2,
+    "requesterRole": "user",
+    "targetUserId": 4,
+    "resourceId": 101,
+    "resourceType": "wishlist",
+    "ownerId": 2,
+    "permission": "superadmin"
+  }
+}

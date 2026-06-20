@@ -1,0 +1,178 @@
+services:
+
+  # ─────────────────────────────────────────────
+  # Datenbank
+  # ─────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16
+    container_name: rezeptshop-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - rezeptshop-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db-seed:
+    image: postgres:16
+    container_name: rezeptshop-db-seed
+    profiles: ["dev"]
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./database/dummy-daten.sql:/dummy-daten.sql:ro
+    command: psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /dummy-daten.sql
+    networks:
+      - rezeptshop-net
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: rezeptshop-pgadmin
+    profiles: ["dev"]
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - rezeptshop-net
+
+  # ─────────────────────────────────────────────
+  # Backend-Services
+  # ─────────────────────────────────────────────
+
+  auth-service:
+    build: ./backend/auth-service
+    container_name: auth-service
+    restart: unless-stopped
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - rezeptshop-net
+
+  authorization-service:
+    build: ./backend/authorization-service
+    container_name: authorization-service
+    restart: unless-stopped
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - rezeptshop-net
+
+  inventory-service:
+    build: ./backend/inventory-service
+    container_name: inventory-service
+    restart: unless-stopped
+    environment:
+      PORT: 3003
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    ports:
+      - "3003:3003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - rezeptshop-net
+
+  wishlist-service:
+    build: ./backend/wishlist-service
+    container_name: wishlist-service
+    restart: unless-stopped
+    environment:
+      PORT: 3004
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    ports:
+      - "3004:3004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - rezeptshop-net
+
+  user-service:
+    build: ./backend/user-service
+    container_name: user-service
+    restart: unless-stopped
+    environment:
+      PORT: 3005
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    ports:
+      - "3005:3005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - rezeptshop-net
+
+  # ─────────────────────────────────────────────
+  # Frontends (Vanilla JS via nginx)
+  # ─────────────────────────────────────────────
+
+  user-portal:
+    image: nginx:alpine
+    container_name: user-portal
+    restart: unless-stopped
+    volumes:
+      - ./frontend/user-portal/public:/usr/share/nginx/html:ro
+    ports:
+      - "8080:80"
+    networks:
+      - rezeptshop-net
+
+  admin-portal:
+    image: nginx:alpine
+    container_name: admin-portal
+    restart: unless-stopped
+    volumes:
+      - ./frontend/admin-portal/public:/usr/share/nginx/html:ro
+    ports:
+      - "8081:80"
+    networks:
+      - rezeptshop-net
+
+# ─────────────────────────────────────────────
+# Netzwerk & Volumes
+# ─────────────────────────────────────────────
+
+networks:
+  rezeptshop-net:
+    driver: bridge
+
+volumes:
+  postgres_data:

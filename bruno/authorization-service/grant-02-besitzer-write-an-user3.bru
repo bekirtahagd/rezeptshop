@@ -1,0 +1,23 @@
+meta {
+  name: GRANT - anna gibt Write-Recht an tom auf Vegane Küche (erlaubt)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{authorizationBaseUrl}}/api/authorization/grant
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "requesterId": 3,
+    "requesterRole": "user",
+    "targetUserId": 4,
+    "resourceId": 3,
+    "resourceType": "wishlist",
+    "ownerId": 3,
+    "permission": "write"
+  }
+}

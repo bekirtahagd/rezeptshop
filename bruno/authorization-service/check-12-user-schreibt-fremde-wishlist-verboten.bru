@@ -1,0 +1,22 @@
+meta {
+  name: CHECK - gesperrt schreibt Lieblingsrezepte ohne Recht (allowed: false)
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{authorizationBaseUrl}}/api/authorization/check
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": 5,
+    "role": "user",
+    "resourceType": "wishlist",
+    "resourceId": 1,
+    "ownerId": 2,
+    "action": "write"
+  }
+}

@@ -1,0 +1,21 @@
+meta {
+  name: CHECK - User liest eigenes Profil (allowed: true)
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{authorizationBaseUrl}}/api/authorization/check
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": 2,
+    "role": "user",
+    "resourceType": "user",
+    "resourceId": 2,
+    "action": "read"
+  }
+}

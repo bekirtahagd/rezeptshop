@@ -1,0 +1,21 @@
+meta {
+  name: CHECK - Admin bearbeitet Produkt (allowed: true)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{authorizationBaseUrl}}/api/authorization/check
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": 1,
+    "role": "admin",
+    "resourceType": "product",
+    "resourceId": 1,
+    "action": "write"
+  }
+}

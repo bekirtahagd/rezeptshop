@@ -1,0 +1,22 @@
+meta {
+  name: CHECK - anna liest Lieblingsrezepte mit Read-Recht (allowed: true)
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{authorizationBaseUrl}}/api/authorization/check
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": 3,
+    "role": "user",
+    "resourceType": "wishlist",
+    "resourceId": 1,
+    "ownerId": 2,
+    "action": "read"
+  }
+}

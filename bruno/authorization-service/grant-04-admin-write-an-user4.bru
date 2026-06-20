@@ -1,0 +1,23 @@
+meta {
+  name: GRANT - admin gibt Read-Recht an gesperrt auf Vegane Küche (erlaubt)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{authorizationBaseUrl}}/api/authorization/grant
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "requesterId": 1,
+    "requesterRole": "admin",
+    "targetUserId": 5,
+    "resourceId": 3,
+    "resourceType": "wishlist",
+    "ownerId": 3,
+    "permission": "read"
+  }
+}

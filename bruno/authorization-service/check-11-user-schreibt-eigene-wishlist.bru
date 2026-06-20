@@ -1,0 +1,22 @@
+meta {
+  name: CHECK - max schreibt eigene Wishlist Lieblingsrezepte (allowed: true)
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{authorizationBaseUrl}}/api/authorization/check
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": 2,
+    "role": "user",
+    "resourceType": "wishlist",
+    "resourceId": 1,
+    "ownerId": 2,
+    "action": "write"
+  }
+}

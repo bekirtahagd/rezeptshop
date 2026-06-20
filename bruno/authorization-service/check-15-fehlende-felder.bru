@@ -1,0 +1,17 @@
+meta {
+  name: CHECK - Fehlende Felder (400 erwartet)
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{authorizationBaseUrl}}/api/authorization/check
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": 2
+  }
+}

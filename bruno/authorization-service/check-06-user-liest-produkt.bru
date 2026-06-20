@@ -1,0 +1,21 @@
+meta {
+  name: CHECK - User liest Produkt (allowed: true)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{authorizationBaseUrl}}/api/authorization/check
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": 2,
+    "role": "user",
+    "resourceType": "product",
+    "resourceId": 1,
+    "action": "read"
+  }
+}
