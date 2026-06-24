@@ -1,0 +1,27 @@
+meta {
+  name: USER-1 - Admin liest fremden User (200)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{userBaseUrl}}/api/users/2
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.user_id: eq 2
+  res.body.email: eq max@test.de
+  res.body.password: isUndefined
+}
+
+docs {
+  USER-1: Ein Admin darf jeden User lesen (authorization-check action 'read' → admin immer
+  erlaubt). Das Passwort darf NICHT zurückgegeben werden.
+}

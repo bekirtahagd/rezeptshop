@@ -1,0 +1,39 @@
+meta {
+  name: USER-2 Setup - Wegwerf-User einloggen (Token + ID)
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{throwEmail}}",
+    "password": "Test1234!"
+  }
+}
+
+script:post-response {
+  // Token merken und die eigene userId aus dem JWT-Payload (mittlerer Teil) auslesen,
+  // damit der User in users-11 seinen EIGENEN Account löschen kann.
+  if (res.status === 200 && res.body.token) {
+    bru.setEnvVar("throwToken", res.body.token);
+    const payload = res.body.token.split(".")[1];
+    const json = JSON.parse(Buffer.from(payload, "base64url").toString());
+    bru.setEnvVar("throwUserId", String(json.userId));
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.token: isDefined
+}
+
+docs {
+  Setup: meldet den Wegwerf-User an, speichert sein JWT in {{throwToken}} und seine ID in
+  {{throwUserId}} (aus dem Token dekodiert).
+}

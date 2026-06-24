@@ -1,0 +1,46 @@
+meta {
+  name: USER-3 - Admin legt Admin an (201)
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{userBaseUrl}}/api/users/admin
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+script:pre-request {
+  // Eindeutige E-Mail pro Lauf → Suite bleibt idempotent (kein 409 beim Wiederholen).
+  // Wird unten von users-07 (Dublette) und users-12 (Cleanup) wiederverwendet.
+  bru.setEnvVar("brunoAdminEmail", "bruno-admin-" + Date.now() + "@test.de");
+}
+
+body:json {
+  {
+    "email": "{{brunoAdminEmail}}",
+    "password": "Test1234!"
+  }
+}
+
+script:post-response {
+  // ID merken, damit users-12 denselben Admin wieder löscht (Aufräumen).
+  if (res.status === 201 && res.body.user_id) {
+    bru.setEnvVar("newAdminId", String(res.body.user_id));
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.user_id: isDefined
+  res.body.role: eq admin
+}
+
+docs {
+  USER-3: Admin legt einen neuen Admin an (→ 201, role 'admin', auto-verifiziert). Die E-Mail
+  wird pro Lauf eindeutig erzeugt und am Ende (users-12) wieder gelöscht → idempotent.
+}

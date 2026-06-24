@@ -1,0 +1,35 @@
+meta {
+  name: LOGIN - Admin → setzt {{adminToken}}
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "admin@test.de",
+    "password": "Test1234!"
+  }
+}
+
+script:post-response {
+  // JWT des Admins in {{adminToken}} ablegen — für alle admin-only User-Operationen.
+  if (res.status === 200 && res.body.token) {
+    bru.setEnvVar("adminToken", res.body.token);
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.token: isDefined
+}
+
+docs {
+  Setup: meldet admin@test.de an und speichert das JWT in {{adminToken}}.
+  Muss vor allen User-Requests laufen.
+}
