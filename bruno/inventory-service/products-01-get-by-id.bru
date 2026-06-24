@@ -1,0 +1,25 @@
+meta {
+  name: INV-1 - Produkt per ID (200)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{inventoryBaseUrl}}/api/products/1
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.product_id: eq 1
+  res.body.name: isDefined
+}
+
+docs {
+  INV-1: Einzelnes Produkt per eindeutiger ID. Braucht ein gültiges JWT (login-01 vorher).
+  Produkt 1 = "Schoko-Brownies" aus den Dummy-Daten.
+}

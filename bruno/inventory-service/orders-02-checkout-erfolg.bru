@@ -1,0 +1,28 @@
+meta {
+  name: INV-7/8 - Kauf abschließen (201)
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{inventoryBaseUrl}}/api/orders
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 201
+  res.body.order_id: isDefined
+  res.body.status: eq completed
+  res.body.total: isDefined
+}
+
+docs {
+  INV-7: Checkout für max (verifiziert). Wandelt den Warenkorb in eine Bestellung um,
+  reduziert den Bestand in einer Transaktion und leert den Korb → 201 mit Bestellübersicht.
+  INV-8: löst die Kaufbestätigungsmail aus — danach in Mailpit (http://localhost:8025)
+  liegt eine Mail "Deine Bestellung #<id> im Rezeptshop".
+}

@@ -1,0 +1,29 @@
+meta {
+  name: INV-2 - Produktsuche (name + category) (200)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{inventoryBaseUrl}}/api/products?name=ti&category=Backen
+  auth: none
+}
+
+params:query {
+  name: ti
+  category: Backen
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body[0].name: eq Tiramisu
+}
+
+docs {
+  INV-2: Suche mit zwei kombinierten Kriterien (name ILIKE '%ti%' UND category = 'Backen').
+  Erwartet genau "Tiramisu" aus den Dummy-Daten. Weitere Kriterien möglich: minPrice, maxPrice.
+}

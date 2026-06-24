@@ -1,0 +1,22 @@
+meta {
+  name: INV-1 - Produkt nicht gefunden (404)
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{inventoryBaseUrl}}/api/products/999999
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  INV-1 Fehlerfall: unbekannte Produkt-ID → 404.
+}

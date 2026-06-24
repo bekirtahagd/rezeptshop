@@ -1,0 +1,24 @@
+meta {
+  name: INV-6 - Produkt aus Warenkorb entfernen (200)
+  type: http
+  seq: 14
+}
+
+delete {
+  url: {{inventoryBaseUrl}}/api/cart/5
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.cart_id: isDefined
+}
+
+docs {
+  INV-6: entfernt Produkt 5 (Grüner Smoothie) aus max' Warenkorb. Idempotent — auch wenn
+  das Produkt nicht (mehr) im Korb liegt, antwortet der Endpunkt mit 200 + aktuellem Korb.
+}

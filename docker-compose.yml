@@ -119,11 +119,24 @@ services:
     environment:
       PORT: 3003
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      # Andere Services im Docker-Netzwerk über Container-Namen erreichen (analog @postgres).
+      AUTH_SERVICE_URL: http://auth-service:3001
+      AUTHORIZATION_SERVICE_URL: http://authorization-service:3002
+      # Mail (INV-8 Kaufbestätigung) — in Docker fest auf Mailpit (dev), wie beim auth-service.
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+      MAIL_FROM: ${MAIL_FROM}
     ports:
       - "3003:3003"
     depends_on:
       postgres:
         condition: service_healthy
+      auth-service:
+        condition: service_started
+      authorization-service:
+        condition: service_started
     networks:
       - rezeptshop-net
 

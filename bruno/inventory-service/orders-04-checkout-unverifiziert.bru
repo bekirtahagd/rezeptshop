@@ -1,0 +1,24 @@
+meta {
+  name: INV-7 - Kauf ohne bestätigte E-Mail (403)
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{inventoryBaseUrl}}/api/orders
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tomToken}}
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  INV-7 Regel: Käufe verlangen eine bestätigte E-Mail. tom@test.de ist eingeloggt, aber
+  email_verified = false → 403. Die Prüfung erfolgt vor dem Warenkorb-Check, daher braucht
+  tom keine Items im Korb. Benötigt login-03 (setzt {{tomToken}}).
+}
