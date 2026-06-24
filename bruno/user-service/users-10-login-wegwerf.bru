@@ -22,8 +22,10 @@ script:post-response {
   // damit der User in users-11 seinen EIGENEN Account löschen kann.
   if (res.status === 200 && res.body.token) {
     bru.setEnvVar("throwToken", res.body.token);
-    const payload = res.body.token.split(".")[1];
-    const json = JSON.parse(Buffer.from(payload, "base64url").toString());
+    // JWT-Payload (mittlerer Teil) dekodieren. Bruno kennt kein 'base64url', daher
+    // base64url -> base64 umwandeln (- -> +, _ -> /) und mit Standard-'base64' lesen.
+    const payload = res.body.token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const json = JSON.parse(Buffer.from(payload, "base64").toString());
     bru.setEnvVar("throwUserId", String(json.userId));
   }
 }
