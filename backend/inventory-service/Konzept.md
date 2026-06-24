@@ -1,5 +1,10 @@
 # Inventory-Service — Konzept & Implementierungsplan
 
+> **Status: vollständig umgesetzt (INV-1–8).** Alle Endpunkte implementiert, end-to-end
+> getestet und mit 19 Bruno-Requests (`rezeptshop/bruno/inventory-service/`) abgedeckt.
+> Eingereicht als PR #41. Details siehe Abschnitte „Umsetzungsreihenfolge" und
+> „Getroffene Entscheidungen" am Ende.
+
 ## Was macht dieser Service?
 
 Der **Inventory-Service** ist das Herz des Shops: Er verwaltet **Produkte**, den
@@ -239,42 +244,60 @@ Konventionen vom auth-/authorization-service: deutsche Kommentare, `async/await`
 
 ---
 
-## Test (Bruno) — `rezeptshop/bruno/inventory-service/`
+## Test (Bruno) — `rezeptshop/bruno/inventory-service/` ✅ (19 Requests)
 
-Idempotent (ohne DB-Reset wiederholbar), mit echten `assert`-Blöcken. Token wie in der
-auth-Kollektion: `login-user` schreibt das JWT per `script:post-response` in `{{token}}`,
-`login-admin` in `{{adminToken}}` (neue Env-Var in `environments/local.bru`).
+Idempotent (ohne DB-Reset wiederholbar), mit echten `assert`-Blöcken. Die Login-Requests
+schreiben das JWT per `script:post-response` ins Environment (`environments/local.bru` um
+`adminToken`, `tomToken`, `newProductId` erweitert) — danach nutzen alle anderen
+`Authorization: Bearer {{token|adminToken|tomToken}}`.
 
-- **login:** `login-user` (max), `login-admin` (admin)
-- **products:** `get-by-id`, `search`, `get-404`, `create-admin`, `create-user-verboten (403)`,
-  `update-admin`, `delete-admin` (create→delete als wiederholbares Paar)
-- **cart:** `add`, `add-nicht-verfuegbar (409)`, `get`, `remove`
-- **orders:** `checkout-erfolg`, `checkout-leerer-korb (400)`, `checkout-unverifiziert (403, tom)`,
-  `history`
+- **login (3):** `login-01-user` → `{{token}}` (max, verifiziert) · `login-02-admin` →
+  `{{adminToken}}` · `login-03-tom` → `{{tomToken}}` (unverifiziert, für den 403-Kauf-Test)
+- **products (7):** `01-get-by-id` · `02-search` · `03-get-404` · `04-create-admin`
+  (merkt sich `{{newProductId}}`) · `05-create-user-verboten (403)` · `06-update-admin`
+  · `07-delete-admin` — `04`→`06`→`07` arbeiten auf demselben frisch erstellten Produkt
+  und räumen es wieder auf (idempotent)
+- **cart (4):** `01-add` · `02-add-nicht-verfuegbar (409, Rindersteak amount 0)` · `03-get`
+  · `04-remove`
+- **orders (5):** `01-add-fuer-kauf` (befüllt den Korb vor dem Kauf → idempotent) ·
+  `02-checkout-erfolg (201)` · `03-checkout-leerer-korb (400)` ·
+  `04-checkout-unverifiziert (403, tom)` · `05-history`
+
+> **Hinweis zu NUMERIC-Feldern in Asserts:** `price`/`total`/`subtotal`/`purchase_price`
+> sind `NUMERIC`-Spalten; `node-postgres` liefert sie als **String** (z. B. `"12.50"`, nicht
+> `12.5`). In Bruno-Asserts daher als String vergleichen: `res.body.price: eq "12.50"`.
+> `amount` ist `INT` → echte Zahl (`eq 5`).
 
 ---
 
 ## Umsetzungsreihenfolge
 
-1. **Setup:** `package.json`, `Dockerfile`, `src/index.js`, `config/db.js` → `/health` läuft.
-2. **Delegation:** `config/services.js` + `middleware/authenticate.js`.
-3. **Produkte (INV-1–5):** `routes/products.js`, je Endpunkt in Bruno testen.
-4. **Warenkorb (INV-6):** `routes/cart.js`, inkl. 409-Fall.
-5. **Kauf + Mail (INV-7/8):** `routes/orders.js` + `config/mailer.js`, inkl. 403/400-Fälle.
-6. **Infra:** `docker-compose.yml` / `.env` / `.env.example` ergänzen.
-7. **Doku + PR:** Projektstatus aktualisieren, committen, pushen, Pull Request nach `main`.
+1. ~~**Setup:** `package.json`, `Dockerfile`, `src/index.js`, `config/db.js` → `/health` läuft.~~ ✅
+2. ~~**Delegation:** `config/services.js` + `middleware/authenticate.js`.~~ ✅
+3. ~~**Produkte (INV-1–5):** `routes/products.js`, je Endpunkt in Bruno testen.~~ ✅
+4. ~~**Warenkorb (INV-6):** `routes/cart.js`, inkl. 409-Fall.~~ ✅
+5. ~~**Kauf + Mail (INV-7/8):** `routes/orders.js` + `config/mailer.js`, inkl. 403/400-Fälle.~~ ✅
+6. ~~**Infra:** `docker-compose.yml` / `.env` / `.env.example` ergänzen.~~ ✅
+7. ~~**Doku + PR:** Projektstatus aktualisieren, committen, pushen, Pull Request nach `main`.~~ ✅ (PR #41)
 
-Nach jedem Endpunkt: in **Bruno** testen, dann der nächste (üblicher Workflow).
+**End-to-end verifiziert (curl, gegen laufende DB + alle drei Services):** health, 401 ohne
+Token, INV-1/2 (inkl. 404), INV-3/4/5 (inkl. 403 als User / 400), INV-6 (inkl. 409),
+INV-7 (201/400/403), Bestandsreduktion korrekt (Tiramisu 15→12), INV-8-Mail in Mailpit;
+idempotente Order-Sequenz über zwei Durchläufe grün.
 
 ---
 
-## Offene / getroffene Entscheidungen
+## Getroffene Entscheidungen
 
-- ✅ **INV-8 wird mitgebaut** (Kaufbestätigungsmail via Mailpit).
+- ✅ **INV-8 mitgebaut** (Kaufbestätigungsmail via Mailpit, `config/mailer.js`).
 - ✅ **Alle Endpunkte verlangen ein JWT** (Prüfungs-Grundregel) — Produkte lesen darf jeder
   eingeloggte User.
-- ✅ **Kauf verlangt `email_verified = true`** (per DB-Query geprüft) — setzt die
-  auth-service-Entscheidung um.
-- 🔵 *Klein, beim Implementieren zu klären:* Soll `purchase_price` der aktuelle `products.price`
-  zum Kaufzeitpunkt sein (geplant: **ja**) — so bleibt die Historie korrekt, auch wenn der
-  Preis später geändert wird.
+- ✅ **Kauf verlangt `email_verified = true`** (per DB-Query geprüft, da `/validate` das Feld
+  nicht liefert) — setzt die auth-service-Entscheidung um.
+- ✅ **`purchase_price` = `products.price` zum Kaufzeitpunkt** — die gekaufte Menge wird mit
+  dem aktuellen Produktpreis in `orderpositions` festgeschrieben, damit die Historie korrekt
+  bleibt, auch wenn der Preis später geändert wird.
+- ✅ **HTTP-Client = natives `fetch`** (Node 20) statt axios — keine zusätzliche Dependency;
+  nicht erreichbarer Zieldienst → `503`.
+- ✅ **Überverkauf-Schutz:** Checkout in einer Transaktion mit `SELECT … FOR UPDATE` auf die
+  Produktzeilen; reicht der Bestand nicht → Rollback + `409`.
