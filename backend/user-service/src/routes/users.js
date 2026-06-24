@@ -129,4 +129,46 @@ router.post('/admin', async (req, res) => {
   }
 });
 
+// Gemeinsame Logik für USER-4: setzt das Flag `locked` (true = sperren, false = entsperren).
+// Nur Admin (authorization-check action 'lock'/'unlock'); ein Admin darf sich aber nicht
+// selbst sperren (Self-Lockout-Schutz). Die Sperre wirkt sofort, da der auth-service
+// `locked` bei jedem /validate live aus der DB prüft.
+async function setLocked(req, res, locked, action) {
+  const isSelf = String(req.user.userId) === String(req.params.id);
+
+  try {
+    const allowed = await checkPermission({
+      userId: req.user.userId,
+      role: req.user.role,
+      resourceType: 'user',
+      resourceId: req.params.id,
+      action,
+    });
+    if (!allowed) {
+      return res.status(403).json({ error: 'Keine Berechtigung — nur Admins dürfen User sperren/entsperren' });
+    }
+
+    if (isSelf) {
+      return res.status(400).json({ error: 'Ein Admin kann den eigenen Account nicht sperren' });
+    }
+
+    const result = await db.query(
+      'UPDATE users SET locked = $1 WHERE user_id = $2 RETURNING user_id, email, locked',
+      [locked, req.params.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User nicht gefunden' });
+    }
+    return res.status(200).json(result.rows[0]);
+  } catch (err) {
+    return handleServiceError(err, res);
+  }
+}
+
+// PUT /api/users/:id/lock   (USER-4) — User sperren
+router.put('/:id/lock', (req, res) => setLocked(req, res, true, 'lock'));
+
+// PUT /api/users/:id/unlock (USER-4) — User entsperren
+router.put('/:id/unlock', (req, res) => setLocked(req, res, false, 'unlock'));
+
 module.exports = router;

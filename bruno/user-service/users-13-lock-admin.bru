@@ -1,0 +1,25 @@
+meta {
+  name: USER-4 - Admin sperrt User (200)
+  type: http
+  seq: 15
+}
+
+put {
+  url: {{userBaseUrl}}/api/users/{{throwUserId}}/lock
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.locked: eq true
+}
+
+docs {
+  USER-4: Admin sperrt den Wegwerf-User → 200, locked:true. Die Sperre wirkt sofort, da der
+  auth-service `locked` bei jedem /validate live aus der DB prüft.
+}
