@@ -29,19 +29,20 @@ Dann `.env` öffnen und die Passwörter anpassen.
 
 Docker startet alle Services, die Datenbank und die Frontends automatisch.
 Kein manuelles `npm install` nötig.
+**Ihr müsst docker desktop gestartet haben!!**
 
 ```bash
 # Nur Datenbank starten (zum Entwickeln eines einzelnen Services lokal)
 docker compose up postgres -d
 
-# Datenbank + pgAdmin + Dummy-Daten starten (empfohlen für Entwicklung)
-docker compose --profile dev up postgres pgadmin db-seed -d
+# Datenbank + pgAdmin + Dummy-Daten + Mailpit starten (empfohlen für Entwicklung)
+docker compose --profile dev up postgres pgadmin db-seed mailpit -d
 
 # Alles starten (alle Services + DB + Frontends) — erst wenn alle Dockerfiles befüllt sind
 docker compose up -d
 
 # Alles starten inkl. pgAdmin + Dummy-Daten
-docker compose --profile dev up -d
+docker compose --profile dev up db-seed -d
 
 # Alles stoppen
 docker compose down
@@ -64,13 +65,14 @@ Mit `--profile dev` wird automatisch ein `db-seed`-Container gestartet, der Test
 
 | Tabelle | Inhalt |
 |---|---|
-| `users` | 1 Admin, 2 normale User, 1 unverifiziert (`tom@test.de`), 1 gesperrt (`gesperrt@test.de`) |
+| `users` | 1 Admin + 6 User; Spezialfälle: 1 unverifiziert (`tom@test.de`), 1 gesperrt (`gesperrt@test.de`), 2 für Auth-Tests (`verify@test.de`, `magic@test.de`) |
 | `products` | 6 Produkte in 4 Kategorien — eines mit `amount=0` (für Warenkorb-Test) |
 | `carts` / `cart_items` | 2 gefüllte Warenkörbe |
 | `orders` / `orderpositions` | 2 abgeschlossene Bestellungen mit Positionen |
 | `wishlists` / `wishlist_product` | 3 Wunschlisten mit Produkten |
 | `permissions` | anna: `read` auf max' Liste; tom: `write` auf max' Liste |
-| `verification_tokens` | Offener Bestätigungslink für tom; Magic Link für max |
+| `verification_tokens` | Bestätigungslink für tom + offener Magic-Link für max; zusätzlich je 3 Zustände (gültig / abgelaufen / benutzt) für `verify@test.de` (E-Mail-Bestätigung) und `magic@test.de` (Magic-Link) |
+| `token_blacklist` | leer — wird erst zur Laufzeit beim Logout befüllt (AUTH-4) |
 
 **Test-Accounts:**
 
@@ -81,10 +83,13 @@ Mit `--profile dev` wird automatisch ein `db-seed`-Container gestartet, der Test
 | `anna@test.de` | user | `Test1234!` | Hat Leserecht auf max' Wishlist |
 | `tom@test.de` | user | `Test1234!` | E-Mail **nicht** verifiziert; Schreibrecht auf max' Wishlist |
 | `gesperrt@test.de` | user | `Test1234!` | Account **gesperrt** |
+| `verify@test.de` | user | `Test1234!` | unverifiziert — 3 Bestätigungs-Tokens (gültig / abgelaufen / benutzt) für AUTH-2-Tests |
+| `magic@test.de` | user | `Test1234!` | verifiziert — 3 Magic-Link-Tokens (gültig / abgelaufen / benutzt) für AUTH-5-Tests |
 
 > **Hinweis zu Passwörtern:** Die bcrypt-Hashes in `database/dummy-daten.sql` sind Platzhalter.
 > Login-Tests funktionieren erst sobald der auth-service implementiert ist und die Hashes
-> mit `node -e "require('bcrypt').hash('Test1234!', 10).then(console.log)"` neu generiert wurden.
+> mit `node -e "require('bcryptjs').hash('Test1234!', 10).then(console.log)"` neu generiert wurden.
+> (Wir nutzen `bcryptjs` statt `bcrypt` — reines JS, kein nativer Build im Alpine-Container.)
 
 **Doppelter Start kein Problem:** `ON CONFLICT DO NOTHING` verhindert Fehler wenn die Daten bereits existieren.
 
@@ -100,6 +105,37 @@ Mit `--profile dev` wird automatisch ein `db-seed`-Container gestartet, der Test
 | wishlist-service API | http://localhost:3004 |
 | user-service API | http://localhost:3005 |
 | pgAdmin (nur --profile dev) | http://localhost:5050 |
+| Mailpit Postfach (nur --profile dev) | http://localhost:8025 |
+
+---
+
+## Mailpit — Test-Postfach (nur Entwicklung)
+
+Der `auth-service` verschickt E-Mails (Registrierungs-Bestätigung, Magic-Link).
+In der Entwicklung soll **keine echte Mail** verschickt werden. Dafür gibt es **Mailpit** —
+ein Mail-Auffangbecken, das jede ausgehende Mail abfängt und in einer Web-Oberfläche anzeigt.
+
+Mailpit gehört wie pgAdmin und db-seed ins **`dev`-Profil** und startet daher nur mit `--profile dev`:
+
+```bash
+docker compose --profile dev up postgres mailpit -d
+```
+
+- **Postfach im Browser:** http://localhost:8025 — hier landen alle Mails, ideal zum Anklicken
+  der Bestätigungs- und Magic-Links.
+- **SMTP-Port:** `1025` (dorthin sendet der auth-service). Keine Authentifizierung nötig.
+- **Keine** Mail verlässt je das System.
+
+**Konfiguration (analog zum `DATABASE_URL`-Prinzip):**
+
+| Umgebung | Mail-Host | Erklärung |
+|---|---|---|
+| In Docker | `mailpit` | In `docker-compose.yml` für den auth-service **fest verdrahtet** |
+| Lokal (`npm start`) | `localhost` | Wert aus `.env` — erreicht den über Port 1025 exponierten Mailpit |
+
+> **Produktion sieht anders aus:** Den Mailpit-Container gibt es nur in der Entwicklung.
+> Für echten Versand werden in `.env` die `MAIL_*`-Werte auf einen echten SMTP-Server gesetzt
+> (`MAIL_HOST`, `MAIL_PORT=587`, `MAIL_USER`, `MAIL_PASS`) — der Code im auth-service bleibt gleich.
 
 ---
 
