@@ -1,0 +1,22 @@
+meta {
+  name: GET fremde Liste ohne Recht (anna) → 403
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{annaToken}}
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  anna hat (noch) keine Berechtigung auf diese neue Liste → 403. Wird durch den Share-Request aufgehoben.
+}

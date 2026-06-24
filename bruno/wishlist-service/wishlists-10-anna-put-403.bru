@@ -1,0 +1,29 @@
+meta {
+  name: PUT mit nur read (anna) → 403
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{annaToken}}
+}
+
+body:json {
+  {
+    "name": "darf-anna-nicht"
+  }
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  anna hat nur 'read' → Schreiben (write) bleibt verboten. Beweist die Stufen-Trennung read < write.
+}

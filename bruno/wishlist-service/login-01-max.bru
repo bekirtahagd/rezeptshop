@@ -1,0 +1,35 @@
+meta {
+  name: LOGIN - Besitzer (max) → setzt {{token}}
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "max@test.de",
+    "password": "Test1234!"
+  }
+}
+
+script:post-response {
+  // JWT des Listen-Besitzers in {{token}} ablegen — Basis für alle Owner-Aktionen.
+  if (res.status === 200 && res.body.token) {
+    bru.setEnvVar("token", res.body.token);
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.token: isDefined
+}
+
+docs {
+  Setup: meldet max@test.de (Besitzer der Wegwerf-Liste) an und speichert das JWT in {{token}}.
+  Muss vor allen wishlist-Requests laufen.
+}

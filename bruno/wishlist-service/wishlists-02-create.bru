@@ -1,0 +1,39 @@
+meta {
+  name: WUN-1 create (max) → setzt {{newListId}}
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{wishlistBaseUrl}}/api/wishlists
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "name": "TEST-Wegwerf",
+    "description": "Wird am Ende der Kollektion wieder gelöscht"
+  }
+}
+
+script:post-response {
+  // list_id der Wegwerf-Liste merken — alle folgenden Requests arbeiten darauf.
+  if (res.status === 201 && res.body.list_id) {
+    bru.setEnvVar("newListId", res.body.list_id);
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.list_id: isDefined
+  res.body.owner_user_id: eq 2
+}
+
+docs {
+  WUN-1: max legt eine eigene Wunschliste an (wird automatisch Besitzer). Keine Authz nötig.
+}

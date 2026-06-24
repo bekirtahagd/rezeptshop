@@ -1,0 +1,34 @@
+meta {
+  name: LOGIN - tom (write-Share) → setzt {{tomToken}}
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "tom@test.de",
+    "password": "Test1234!"
+  }
+}
+
+script:post-response {
+  // tom ist Nicht-Besitzer (user_id 4) — bekommt später 'write' auf die Liste.
+  if (res.status === 200 && res.body.token) {
+    bru.setEnvVar("tomToken", res.body.token);
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.token: isDefined
+}
+
+docs {
+  Setup: meldet tom@test.de (user_id 4) an und speichert das JWT in {{tomToken}}.
+}

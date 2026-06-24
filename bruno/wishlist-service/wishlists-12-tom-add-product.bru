@@ -1,0 +1,29 @@
+meta {
+  name: tom fügt Produkt hinzu (write) → 201
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}/products
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tomToken}}
+}
+
+body:json {
+  {
+    "productId": 1
+  }
+}
+
+assert {
+  res.status: eq 201
+}
+
+docs {
+  tom hat 'write' → darf Produkte hinzufügen (idempotent dank ON CONFLICT DO NOTHING).
+}

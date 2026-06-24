@@ -1,0 +1,30 @@
+meta {
+  name: WUN-2 umbenennen (max, write) → 200
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "name": "TEST-Umbenannt"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.name: eq TEST-Umbenannt
+}
+
+docs {
+  WUN-2: Besitzer benennt die Liste um (write).
+}

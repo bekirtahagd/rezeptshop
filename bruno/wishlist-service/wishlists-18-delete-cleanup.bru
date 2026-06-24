@@ -1,0 +1,23 @@
+meta {
+  name: WUN-3 löschen (max, owner, Cleanup) → 200
+  type: http
+  seq: 21
+}
+
+delete {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  WUN-3 + Cleanup: der Besitzer löscht die Wegwerf-Liste am Ende. Macht die Kollektion idempotent
+  wiederholbar (jeder Lauf legt eine frische Liste an und räumt sie wieder weg).
+}
