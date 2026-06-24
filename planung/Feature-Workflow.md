@@ -95,9 +95,34 @@ Der Service meldet sich mit: `mein-service läuft auf Port 300X`
 
 ### 3b. Bruno öffnen
 
-1. Bruno starten
-2. `Open Collection` → `rezeptshop/bruno/` auswählen
-3. Oben rechts das Environment auf **`local`** setzen (wichtig!)
+Bruno ist unser API-Testing-Tool (wie Postman, nur dateibasiert und git-freundlich): Damit
+schickst du HTTP-Requests an deinen Service, ohne ein Frontend zu brauchen, und siehst direkt
+Statuscode und Antwort. Unsere Requests liegen als `.bru`-Dateien im Repo, sind also für
+alle per `git pull` verfügbar.
+
+1. **Bruno starten.**
+2. **Collection öffnen:** `Open Collection` → den Ordner `rezeptshop/bruno/` auswählen
+   (dort liegt `bruno.json`). Links erscheint die Collection „Rezeptshop API" mit einem
+   Unterordner pro Service.
+3. **Environment auf `local` setzen — der wichtigste und am leichtesten übersehene Schritt:**
+
+   In den Requests stehen keine festen URLs, sondern Platzhalter wie `{{authBaseUrl}}`. Diese
+   werden erst durch ein **Environment** mit echten Werten gefüllt (`authBaseUrl` →
+   `http://localhost:3001` usw., definiert in `bruno/environments/local.bru`). Ohne
+   ausgewähltes Environment bleibt der Platzhalter leer und du bekommst den Fehler
+   **„invalid address"**.
+
+   So wählst du es aus:
+   - **Zuerst einen Request öffnen** (z. B. einen aus deinem Service-Ordner anklicken). Das
+     Environment-Dropdown erscheint nämlich nur bei geöffnetem Request.
+   - **Oben rechts** im Bruno-Fenster auf das Dropdown **„No Environment"** klicken →
+     **`local`** auswählen.
+   - Kontrolle: In der URL-Zeile ist `{{authBaseUrl}}` jetzt aufgelöst (Maus drüberhalten
+     zeigt `http://localhost:3001`).
+
+   > Verwechslungsgefahr: Der Tab **„Environments"** im Workspace-Overview (zeigt evtl. `0`)
+   > ist der **globale** — den brauchen wir nicht. Unser Environment gehört **zur Collection**
+   > und taucht nur im Dropdown oben rechts bei geöffnetem Request auf.
 
 ### 3c. .bru-Dateien für deinen Service anlegen
 
