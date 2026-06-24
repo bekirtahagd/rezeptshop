@@ -12,14 +12,19 @@ post {
 
 body:json {
   {
-    "email": "neu@test.de",
+    "email": "{{regEmail}}",
     "password": "Test1234!"
   }
 }
 
+script:pre-request {
+  // Bei jedem Lauf eine eindeutige E-Mail erzeugen, damit register IMMER 201 liefert
+  // (statt 409 beim zweiten Mal). Die Adresse wird in confirm-00 wiederverwendet.
+  bru.setVar("regEmail", "regtest_" + Date.now() + "@test.de");
+}
+
 docs {
-  Erfolgsfall AUTH-1: legt einen neuen User an und verschickt die Bestätigungsmail.
-  Die Mail landet in Mailpit (http://localhost:8025).
-  Bei erneutem Ausführen kommt 409, weil neu@test.de dann schon existiert
-  (DB mit "docker compose down -v" zurücksetzen, um wieder 201 zu bekommen).
+  Erfolgsfall AUTH-1: legt bei jedem Lauf einen neuen User mit eindeutiger E-Mail an → immer 201.
+  Die Bestätigungsmail landet in Mailpit (http://localhost:8025); confirm-00 holt sich daraus
+  den frischen Token. Dadurch ist der komplette Ordner beliebig oft wiederholbar.
 }

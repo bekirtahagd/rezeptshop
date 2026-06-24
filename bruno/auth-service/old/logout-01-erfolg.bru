@@ -1,0 +1,22 @@
+meta {
+  name: LOGOUT - Erfolg (200)
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/logout
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+docs {
+  AUTH-4 echtes Logout: schreibt die jti des aktuellen Tokens in token_blacklist → 200 "Abgemeldet".
+  Reihenfolge zum Testen: login-01 → logout-01 → danach me-01 bzw. validate-01 MIT demselben Token
+  liefern jetzt 401 ("Token abgemeldet") bzw. { valid: false } — das Token ist nun gesperrt.
+  Für weitere Tests login-01 erneut ausführen (stellt ein frisches Token aus).
+}

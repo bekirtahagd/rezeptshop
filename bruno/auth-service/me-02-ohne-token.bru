@@ -1,0 +1,15 @@
+meta {
+  name: ME - Ohne Token (401)
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{authBaseUrl}}/api/auth/me
+  auth: none
+}
+
+docs {
+  Kein Authorization-Header → 401 "Kein Token".
+  Grundregel der Prüfung: Anfragen ohne Authentifizierung werden abgelehnt.
+}

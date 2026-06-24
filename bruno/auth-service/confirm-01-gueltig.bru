@@ -1,15 +1,16 @@
 meta {
   name: CONFIRM - Gültiger Token (200)
   type: http
-  seq: 4
+  seq: 5
 }
 
 get {
-  url: {{authBaseUrl}}/api/auth/confirm/confirm-verify-valid
+  url: {{authBaseUrl}}/api/auth/confirm/{{confirmToken}}
   auth: none
 }
 
 docs {
-  Seed-Token confirm-verify-valid (gültig & offen) für verify@test.de → 200 E-Mail bestätigt.
-  Achtung: Beim zweiten Aufruf 400 (Token bereits verwendet), da der Token verbraucht wird.
+  Erfolgsfall AUTH-2: bestätigt den frischen Token, den confirm-00 aus Mailpit geholt hat → 200.
+  Weil register-01 jedes Mal einen neuen User + Token erzeugt, klappt das bei jedem Lauf erneut
+  (kein DB-Reset nötig). Voraussetzung: register-01 und confirm-00 liefen direkt davor.
 }

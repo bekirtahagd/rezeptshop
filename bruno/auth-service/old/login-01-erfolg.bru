@@ -1,0 +1,32 @@
+meta {
+  name: LOGIN - Erfolg (200)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "max@test.de",
+    "password": "Test1234!"
+  }
+}
+
+script:post-response {
+  // Bei Erfolg das ausgestellte JWT ins Environment schreiben,
+  // damit me/validate/logout es als {{token}} weiterverwenden können.
+  if (res.status === 200 && res.body.token) {
+    bru.setEnvVar("token", res.body.token);
+  }
+}
+
+docs {
+  Erfolgsfall AUTH-3: max@test.de / Test1234! (Dummy-Daten) → 200 { token }.
+  Das post-response-Script speichert den Token automatisch in der Env-Variable {{token}}.
+  Danach me-01, validate-01 und logout-01 ausführen — sie nutzen denselben Token.
+}

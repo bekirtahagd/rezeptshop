@@ -1,0 +1,22 @@
+meta {
+  name: VALIDATE - Ungültiges Token (valid:false)
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/validate
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "token": "kaputter.token.string"
+  }
+}
+
+docs {
+  Ungültiger/gefälschter Token → 200 { valid: false } (kein Fehlerstatus, bewusst).
+  Andere Services lehnen den Request dann mit ihrem eigenen 401 ab.
+}

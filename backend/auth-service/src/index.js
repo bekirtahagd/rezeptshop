@@ -15,7 +15,8 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'auth-service' });
 });
 
-// Auth-Endpunkte — Schritt 3: register, confirm (login/logout/magic-link folgen in Schritt 4/5)
+// Auth-Endpunkte — Schritt 3: register, confirm · Schritt 4: login, logout, me, validate
+// (magic-link folgt in Schritt 5)
 app.use('/api/auth', require('./routes/auth'));
 
 app.listen(PORT, () => {

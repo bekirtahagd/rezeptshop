@@ -142,7 +142,9 @@ Variante für den **Code** statt des Links — funktioniert wie ein Einmalpasswo
 Client erhaltene JWT hierher und bekommen die geprüfte Identität zurück.
 - **Body:** `{ "token": "Bearer <jwt>" }`
 - **Ablauf:** Signatur & Ablauf mit `jsonwebtoken.verify()` prüfen → schauen ob die `jti`
-  in `token_blacklist` steht (= ausgeloggt) → wenn alles ok: Identität zurückgeben.
+  in `token_blacklist` steht (= ausgeloggt) → **live in der DB** prüfen, ob der User noch
+  existiert und nicht `locked` ist (so wirkt ein Sperren / USER-4 sofort, nicht erst nach
+  Token-Ablauf) → wenn alles ok: Identität zurückgeben (`role` aus der DB, falls geändert).
 - **Response:** `{ "valid": true, "userId": 2, "role": "user", "email": "..." }`
   oder `{ "valid": false }`.
 
@@ -240,8 +242,14 @@ Pflichtfelder mit `400`, `dotenv`-Pfadauflösung zum Repo-Root
 3. ~~**AUTH-1 + AUTH-2:** `register`, `confirm` — erste echte Mail in Mailpit getestet.~~ ✅ erledigt
    (`config/mailer.js`, `utils/tokens.js`, `routes/auth.js`; end-to-end gegen Mailpit verifiziert.
    `me` wurde **nach Schritt 4 verschoben**, weil es ein JWT braucht, das erst `login` ausstellt.)
-4. **AUTH-3 + AUTH-4:** `me` (zuerst), `login`, `logout`, `validate`, `middleware/authenticate.js`. ← **als Nächstes**
-5. **AUTH-5:** `magic-link`, `magic-login` (Link + Code).
+4. ~~**AUTH-3 + AUTH-4:** `utils/jwt.js`, `login`, `validate` + `middleware/authenticate.js`,
+   `me`, `logout`.~~ ✅ erledigt
+   (Reihenfolge wegen Abhängigkeiten: `jwt.js` → `login` (stellt JWT aus) → `validate` /
+   `authenticate` → `me` → `logout`. `/validate` macht zusätzlich zur Signatur- und
+   Blacklist-Prüfung einen **Live-DB-Check** auf `locked`/Existenz, damit Sperren (USER-4)
+   sofort wirken — der `authenticate`-Middleware für die eigenen Endpunkte `/me`/`/logout`
+   macht diesen Check bewusst nicht. Bruno-Requests angelegt.)
+5. **AUTH-5:** `magic-link`, `magic-login` (Link + Code). ← **als Nächstes**
 6. **Bruno:** zu jedem Endpunkt eine `.bru` in `planung/bruno/auth-service/` anlegen.
 7. **Frontend (AUTH-Front):** Formulare im user-portal — eigener, späterer Schritt.
 

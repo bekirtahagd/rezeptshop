@@ -3,6 +3,8 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const { generateToken } = require('../utils/tokens');
+const { signToken, verifyToken } = require('../utils/jwt');
+const authenticate = require('../middleware/authenticate');
 const { sendVerificationMail } = require('../config/mailer');
 
 // Einfache E-Mail-Format-Prüfung (kein RFC-Vollcheck — reicht fürs Frontend-Feedback).
@@ -102,6 +104,143 @@ router.get('/confirm/:token', async (req, res) => {
     return res.status(500).json({ error: 'Datenbankfehler' });
   } finally {
     client.release();
+  }
+});
+
+// POST /api/auth/login  (AUTH-3)
+// Prüft die Zugangsdaten und stellt bei Erfolg ein JWT (24h) aus.
+// Login ist auch bei email_verified = false erlaubt (Konzept-Entscheidung) —
+// nur sensible Aktionen (Käufe) verlangen später eine bestätigte E-Mail.
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'email und password sind erforderlich' });
+  }
+
+  try {
+    const result = await db.query(
+      'SELECT user_id, password, role, locked FROM users WHERE email = $1',
+      [email]
+    );
+
+    // Einheitliche Fehlermeldung für "User unbekannt" UND "Passwort falsch",
+    // damit nicht verraten wird, welche E-Mails registriert sind (keine Enumeration).
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'E-Mail oder Passwort falsch' });
+    }
+
+    const user = result.rows[0];
+    const passwordOk = await bcrypt.compare(password, user.password);
+    if (!passwordOk) {
+      return res.status(401).json({ error: 'E-Mail oder Passwort falsch' });
+    }
+
+    // Gesperrte User dürfen sich nicht anmelden.
+    if (user.locked) {
+      return res.status(403).json({ error: 'Konto gesperrt' });
+    }
+
+    const token = signToken({ userId: user.user_id, role: user.role, email });
+    return res.status(200).json({ token });
+  } catch (err) {
+    console.error('Fehler bei /login:', err.message);
+    return res.status(500).json({ error: 'Anmeldung fehlgeschlagen' });
+  }
+});
+
+// GET /api/auth/me  (AUTH-2 Statusabfrage)
+// Gibt die Identität + den aktuellen Verifizierungsstatus des eingeloggten Users zurück.
+// email_verified kommt FRISCH aus der DB (nicht aus den JWT-Claims), weil der User
+// seine E-Mail nach dem Login bestätigt haben kann — der Token-Claim wäre dann veraltet.
+router.get('/me', authenticate, async (req, res) => {
+  try {
+    const result = await db.query(
+      'SELECT email, role, email_verified FROM users WHERE user_id = $1',
+      [req.user.userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User nicht gefunden' });
+    }
+
+    const user = result.rows[0];
+    return res.status(200).json({
+      userId: req.user.userId,
+      email: user.email,
+      role: user.role,
+      email_verified: user.email_verified,
+    });
+  } catch (err) {
+    console.error('Fehler bei /me:', err.message);
+    return res.status(500).json({ error: 'Datenbankfehler' });
+  }
+});
+
+// POST /api/auth/logout  (AUTH-4)
+// Macht das aktuelle JWT vorzeitig ungültig ("echtes" Logout): die jti des Tokens
+// wird in die token_blacklist geschrieben. Ab dann lehnen /validate und die
+// authenticate-Middleware dieses Token ab. expires_at = Ablaufzeit des Tokens.
+router.post('/logout', authenticate, async (req, res) => {
+  try {
+    await db.query(
+      `INSERT INTO token_blacklist (jti, expires_at)
+       VALUES ($1, to_timestamp($2))
+       ON CONFLICT (jti) DO NOTHING`,
+      [req.user.jti, req.user.exp]
+    );
+    return res.status(200).json({ message: 'Abgemeldet' });
+  } catch (err) {
+    console.error('Fehler bei /logout:', err.message);
+    return res.status(500).json({ error: 'Abmeldung fehlgeschlagen' });
+  }
+});
+
+// POST /api/auth/validate  (intern — NICHT fürs Frontend)
+// Andere Services schicken das vom Client erhaltene JWT hierher und bekommen die
+// geprüfte Identität zurück. Geprüft wird: Signatur/Ablauf, Blacklist (ausgeloggt?)
+// und live in der DB, ob der User noch existiert und nicht gesperrt ist (locked).
+// So wirkt ein Sperren (USER-4) sofort, nicht erst nach Token-Ablauf.
+router.post('/validate', async (req, res) => {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ error: 'token ist erforderlich' });
+  }
+
+  // Akzeptiert sowohl "Bearer <jwt>" als auch den rohen Token.
+  const rawToken = token.startsWith('Bearer ') ? token.slice('Bearer '.length) : token;
+
+  let payload;
+  try {
+    payload = verifyToken(rawToken);
+  } catch (err) {
+    return res.status(200).json({ valid: false });
+  }
+
+  try {
+    const blacklisted = await db.query('SELECT 1 FROM token_blacklist WHERE jti = $1', [payload.jti]);
+    if (blacklisted.rows.length > 0) {
+      return res.status(200).json({ valid: false });
+    }
+
+    const result = await db.query(
+      'SELECT role, locked FROM users WHERE user_id = $1',
+      [payload.userId]
+    );
+    if (result.rows.length === 0 || result.rows[0].locked) {
+      return res.status(200).json({ valid: false });
+    }
+
+    return res.status(200).json({
+      valid: true,
+      userId: payload.userId,
+      role: result.rows[0].role, // aus DB, falls sich die Rolle seit Token-Ausstellung geändert hat
+      email: payload.email,
+    });
+  } catch (err) {
+    console.error('Fehler bei /validate:', err.message);
+    return res.status(500).json({ error: 'Datenbankfehler' });
   }
 });
 

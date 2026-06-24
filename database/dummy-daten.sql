@@ -3,25 +3,25 @@
 --
 -- Test-Accounts (alle haben dasselbe Passwort):
 --   Passwort:     Test1234!
---   bcrypt-Hash:  $2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
+--   bcrypt-Hash:  $2b$10$wCR7a4oo.HlAjqTwNrqWue6aBZfETcmXKz6qU1SxpwHvcH8tnrYqO
 --
--- Hinweis: Sobald der auth-service implementiert ist, können neue Hashes
--- mit: node -e "require('bcrypt').hash('Test1234!',10).then(console.log)"
--- generiert und hier eingetragen werden.
+-- Hinweis: Dieser Hash wurde mit bcryptjs (wie im auth-service) für "Test1234!" erzeugt.
+-- Neuen Hash generieren (aus backend/auth-service/):
+--   node -e "console.log(require('bcryptjs').hashSync('Test1234!',10))"
 
 -- ─────────────────────────────────────────────────────────────
 -- USERS
 -- Abdeckung: AUTH-1/3, USER-1/2/3/4
 -- ─────────────────────────────────────────────────────────────
 INSERT INTO users (email, password, role, locked, email_verified) VALUES
-  ('admin@test.de',      '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', false, true),
-  ('max@test.de',        '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  false, true),
-  ('anna@test.de',       '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  false, true),
-  ('tom@test.de',        '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  false, false),
-  ('gesperrt@test.de',   '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  true,  true),
+  ('admin@test.de',      '$2b$10$wCR7a4oo.HlAjqTwNrqWue6aBZfETcmXKz6qU1SxpwHvcH8tnrYqO', 'admin', false, true),
+  ('max@test.de',        '$2b$10$wCR7a4oo.HlAjqTwNrqWue6aBZfETcmXKz6qU1SxpwHvcH8tnrYqO', 'user',  false, true),
+  ('anna@test.de',       '$2b$10$wCR7a4oo.HlAjqTwNrqWue6aBZfETcmXKz6qU1SxpwHvcH8tnrYqO', 'user',  false, true),
+  ('tom@test.de',        '$2b$10$wCR7a4oo.HlAjqTwNrqWue6aBZfETcmXKz6qU1SxpwHvcH8tnrYqO', 'user',  false, false),
+  ('gesperrt@test.de',   '$2b$10$wCR7a4oo.HlAjqTwNrqWue6aBZfETcmXKz6qU1SxpwHvcH8tnrYqO', 'user',  true,  true),
   -- Dedizierte Accounts für Auth-Tests (AUTH-2 / AUTH-5), damit max/anna/tom sauber bleiben:
-  ('verify@test.de',     '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  false, false),  -- unverifiziert, für Bestätigungs-Flow
-  ('magic@test.de',      '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  false, true)    -- verifiziert, für Magic-Link-Flow
+  ('verify@test.de',     '$2b$10$wCR7a4oo.HlAjqTwNrqWue6aBZfETcmXKz6qU1SxpwHvcH8tnrYqO', 'user',  false, false),  -- unverifiziert, für Bestätigungs-Flow
+  ('magic@test.de',      '$2b$10$wCR7a4oo.HlAjqTwNrqWue6aBZfETcmXKz6qU1SxpwHvcH8tnrYqO', 'user',  false, true)    -- verifiziert, für Magic-Link-Flow
 ON CONFLICT (email) DO NOTHING;
 
 -- ─────────────────────────────────────────────────────────────
