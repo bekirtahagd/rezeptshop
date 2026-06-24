@@ -23,7 +23,7 @@ body:json {
 
 assert {
   res.status: eq 200
-  res.body.price: eq 12.50
+  res.body.price: eq "12.50"
   res.body.amount: eq 5
 }
 
