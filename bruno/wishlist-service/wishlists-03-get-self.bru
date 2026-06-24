@@ -1,0 +1,24 @@
+meta {
+  name: GET eigene Liste (max, read) → 200
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.list_id: isDefined
+  res.body.products: isDefined
+}
+
+docs {
+  Besitzer liest seine Liste (read ist für den Besitzer hardcoded erlaubt). products ist anfangs leer.
+}

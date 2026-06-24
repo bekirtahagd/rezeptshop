@@ -1,0 +1,30 @@
+meta {
+  name: WUN-4 teilen an unbekannten User → 404
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}/share
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "userId": 99999999,
+    "authorizationType": "read"
+  }
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  Teilen mit einem nicht existierenden Ziel-User → 404 (Existenzprüfung vor /grant).
+}

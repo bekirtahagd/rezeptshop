@@ -1,0 +1,31 @@
+meta {
+  name: WUN-2 Produkt hinzufügen (max, write) → 201
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}/products
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "productId": 1
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.product_id: eq 1
+}
+
+docs {
+  WUN-2: Besitzer fügt ein Produkt hinzu (write). productId 1 existiert in den Dummy-Daten.
+  Idempotent: erneutes Hinzufügen desselben Produkts ist per ON CONFLICT DO NOTHING harmlos.
+}

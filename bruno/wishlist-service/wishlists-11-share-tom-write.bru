@@ -1,0 +1,30 @@
+meta {
+  name: WUN-4 teilen → tom write (max) → 200
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}/share
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "userId": 4,
+    "authorizationType": "write"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  WUN-4: max teilt die Liste mit tom (user_id 4) als 'write' — tom darf danach Produkte hinzufügen.
+}

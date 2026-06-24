@@ -1,0 +1,22 @@
+meta {
+  name: WUN-2 Produkt entfernen (max, write) → 200
+  type: http
+  seq: 16
+}
+
+delete {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}/products/1
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  WUN-2: Besitzer entfernt das Produkt wieder (write). 404, falls das Produkt nicht in der Liste ist.
+}

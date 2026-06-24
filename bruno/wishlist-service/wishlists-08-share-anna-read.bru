@@ -1,0 +1,30 @@
+meta {
+  name: WUN-4 teilen → anna read (max) → 200
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}/share
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "userId": 3,
+    "authorizationType": "read"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  WUN-4: Besitzer max teilt die Liste mit anna (user_id 3) als 'read'. Delegiert an authorization-service /grant.
+}

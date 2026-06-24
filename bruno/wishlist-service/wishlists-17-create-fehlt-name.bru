@@ -1,0 +1,29 @@
+meta {
+  name: WUN-1 create ohne name → 400
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{wishlistBaseUrl}}/api/wishlists
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "description": "ohne name"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  Validierung: name ist Pflicht → 400, wenn er fehlt.
+}

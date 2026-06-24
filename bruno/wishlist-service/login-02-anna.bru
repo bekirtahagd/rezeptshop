@@ -1,0 +1,34 @@
+meta {
+  name: LOGIN - anna (read-Share) → setzt {{annaToken}}
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "anna@test.de",
+    "password": "Test1234!"
+  }
+}
+
+script:post-response {
+  // anna ist Nicht-Besitzer (user_id 3) — bekommt später nur 'read' auf die Liste.
+  if (res.status === 200 && res.body.token) {
+    bru.setEnvVar("annaToken", res.body.token);
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.token: isDefined
+}
+
+docs {
+  Setup: meldet anna@test.de (user_id 3) an und speichert das JWT in {{annaToken}}.
+}

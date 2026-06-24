@@ -1,0 +1,22 @@
+meta {
+  name: WUN-3 löschen mit nur read (anna) → 403
+  type: http
+  seq: 17
+}
+
+delete {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{annaToken}}
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  WUN-3: Löschen verlangt owner-Stufe. anna (nur read) darf nicht → 403.
+}

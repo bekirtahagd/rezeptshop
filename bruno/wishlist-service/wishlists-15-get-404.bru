@@ -1,0 +1,22 @@
+meta {
+  name: GET unbekannte Liste → 404
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{wishlistBaseUrl}}/api/wishlists/99999999
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  Nicht existierende list_id → 404 (loadWishlist findet nichts).
+}

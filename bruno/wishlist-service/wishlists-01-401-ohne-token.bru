@@ -1,0 +1,18 @@
+meta {
+  name: GET Listen ohne Token → 401
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{wishlistBaseUrl}}/api/wishlists
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}
+
+docs {
+  Grundregel: jeder Endpunkt verlangt ein gültiges JWT. Ohne Authorization-Header → 401.
+}
