@@ -18,7 +18,10 @@ INSERT INTO users (email, password, role, locked, email_verified) VALUES
   ('max@test.de',        '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  false, true),
   ('anna@test.de',       '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  false, true),
   ('tom@test.de',        '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  false, false),
-  ('gesperrt@test.de',   '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  true,  true)
+  ('gesperrt@test.de',   '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  true,  true),
+  -- Dedizierte Accounts für Auth-Tests (AUTH-2 / AUTH-5), damit max/anna/tom sauber bleiben:
+  ('verify@test.de',     '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  false, false),  -- unverifiziert, für Bestätigungs-Flow
+  ('magic@test.de',      '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user',  false, true)    -- verifiziert, für Magic-Link-Flow
 ON CONFLICT (email) DO NOTHING;
 
 -- ─────────────────────────────────────────────────────────────
@@ -26,18 +29,46 @@ ON CONFLICT (email) DO NOTHING;
 -- Abdeckung: AUTH-2 (E-Mail-Bestätigung), AUTH-5 (Magic Link)
 -- ─────────────────────────────────────────────────────────────
 INSERT INTO verification_tokens (token, user_id, type, expires_at, used) VALUES
-  -- Offener Bestätigungslink für tom@test.de (email_verified = false)
+  -- Offener Bestätigungslink für tom@test.de (email_verified = false) — Erfolgsfall AUTH-2
   ('confirm-token-tom-abc123',
    (SELECT user_id FROM users WHERE email = 'tom@test.de'),
    'email_verification',
    NOW() + INTERVAL '24 hours',
    false),
-  -- Magic-Link für max@test.de (bereits benutzt)
+  -- Offener (gültiger) Magic-Link für max@test.de — Erfolgsfall AUTH-5
   ('magic-token-max-xyz789',
    (SELECT user_id FROM users WHERE email = 'max@test.de'),
    'magic_link',
    NOW() + INTERVAL '15 minutes',
-   false)
+   false),
+
+  -- ── E-Mail-Bestätigung (AUTH-2): alle drei Zustände für verify@test.de ──
+  -- gültig & offen → Bestätigung muss klappen
+  ('confirm-verify-valid',
+   (SELECT user_id FROM users WHERE email = 'verify@test.de'),
+   'email_verification', NOW() + INTERVAL '24 hours', false),
+  -- abgelaufen → muss mit "Link abgelaufen" abgelehnt werden
+  ('confirm-verify-expired',
+   (SELECT user_id FROM users WHERE email = 'verify@test.de'),
+   'email_verification', NOW() - INTERVAL '1 hour', false),
+  -- bereits benutzt → darf kein zweites Mal funktionieren
+  ('confirm-verify-used',
+   (SELECT user_id FROM users WHERE email = 'verify@test.de'),
+   'email_verification', NOW() + INTERVAL '24 hours', true),
+
+  -- ── Magic-Link (AUTH-5): alle drei Zustände für magic@test.de ──
+  -- gültig & offen → Einmal-Login muss klappen
+  ('magic-magic-valid',
+   (SELECT user_id FROM users WHERE email = 'magic@test.de'),
+   'magic_link', NOW() + INTERVAL '15 minutes', false),
+  -- abgelaufen → muss abgelehnt werden
+  ('magic-magic-expired',
+   (SELECT user_id FROM users WHERE email = 'magic@test.de'),
+   'magic_link', NOW() - INTERVAL '5 minutes', false),
+  -- bereits benutzt → Einmal-Login darf nur einmal gehen
+  ('magic-magic-used',
+   (SELECT user_id FROM users WHERE email = 'magic@test.de'),
+   'magic_link', NOW() + INTERVAL '15 minutes', true)
 ON CONFLICT (token) DO NOTHING;
 
 -- ─────────────────────────────────────────────────────────────
@@ -133,3 +164,14 @@ INSERT INTO permissions (user_id, resource_type, resource_id, permission) VALUES
    (SELECT list_id FROM wishlists WHERE name = 'Lieblingsrezepte'),
    'write')
 ON CONFLICT (user_id, resource_type, resource_id) DO NOTHING;
+
+-- ─────────────────────────────────────────────────────────────
+-- TOKEN-BLACKLIST (AUTH-4 / Logout)
+-- ─────────────────────────────────────────────────────────────
+-- Hier werden BEWUSST keine Dummy-Daten eingefügt.
+-- Ein Eintrag wirkt nur, wenn ein echtes JWT mit derselben jti existiert — und JWTs
+-- entstehen erst zur Laufzeit beim Login. Der Logout-Test läuft daher so:
+--   1) POST /api/auth/login        → JWT erhalten
+--   2) POST /api/auth/logout       → jti landet in token_blacklist
+--   3) POST /api/auth/validate     → muss jetzt { valid: false } liefern
+-- Vorgefertigte Fake-Einträge würden beim Testen nur verwirren.

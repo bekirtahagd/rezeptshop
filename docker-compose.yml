@@ -56,6 +56,20 @@ services:
     networks:
       - rezeptshop-net
 
+  # Mail-Catcher — NUR Entwicklung (dev-Profil).
+  # Faengt alle ausgehenden Mails ab, kein echter Versand. Postfach im Browser: localhost:8025.
+  # In Produktion gibt es diesen Container NICHT — dort wird ein echter SMTP-Server genutzt.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: rezeptshop-mailpit
+    profiles: ["dev"]
+    restart: unless-stopped
+    ports:
+      - "8025:8025"   # Web-UI (Postfach im Browser)
+      - "1025:1025"   # SMTP (auth-service sendet hierhin)
+    networks:
+      - rezeptshop-net
+
   # ─────────────────────────────────────────────
   # Backend-Services
   # ─────────────────────────────────────────────
@@ -68,10 +82,13 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       JWT_SECRET: ${JWT_SECRET}
-      MAIL_HOST: ${MAIL_HOST}
-      MAIL_PORT: ${MAIL_PORT}
+      # Mail: in Docker fest auf den Mailpit-Container (dev) — analog zu DATABASE_URL -> @postgres.
+      # Mailpit braucht keine Authentifizierung. Produktion ueberschreibt diese Werte mit echtem SMTP.
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
       MAIL_USER: ${MAIL_USER}
       MAIL_PASS: ${MAIL_PASS}
+      MAIL_FROM: ${MAIL_FROM}
     ports:
       - "3001:3001"
     depends_on:

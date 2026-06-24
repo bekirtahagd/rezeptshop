@@ -1,0 +1,14 @@
+meta {
+  name: CONFIRM - Abgelaufener Token (400)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{authBaseUrl}}/api/auth/confirm/confirm-verify-expired
+  auth: none
+}
+
+docs {
+  Seed-Token confirm-verify-expired (expires_at in der Vergangenheit) → 400 Token abgelaufen.
+}

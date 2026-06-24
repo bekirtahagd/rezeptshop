@@ -1,0 +1,14 @@
+meta {
+  name: CONFIRM - Unbekannter Token (404)
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{authBaseUrl}}/api/auth/confirm/gibtsnicht
+  auth: none
+}
+
+docs {
+  Nicht existierender Token → 404 Token nicht gefunden.
+}

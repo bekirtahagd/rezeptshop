@@ -1,0 +1,23 @@
+// Zentrale .env aus dem Repo-Root laden (dieselbe Datei wie bei allen Services).
+// __dirname = .../backend/auth-service/src  →  drei Ebenen hoch = rezeptshop/ (Repo-Root)
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../..', '.env') });
+
+const express = require('express');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Eingehende JSON-Bodies automatisch parsen (req.body)
+app.use(express.json());
+
+// Health-Check: bestätigt nur, dass der Service läuft (praktisch für Docker & schnelle Tests)
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', service: 'auth-service' });
+});
+
+// Auth-Endpunkte — Schritt 3: register, confirm (login/logout/magic-link folgen in Schritt 4/5)
+app.use('/api/auth', require('./routes/auth'));
+
+app.listen(PORT, () => {
+  console.log(`Auth-Service läuft auf Port ${PORT}`);
+});

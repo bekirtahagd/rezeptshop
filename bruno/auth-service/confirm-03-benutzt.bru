@@ -1,0 +1,14 @@
+meta {
+  name: CONFIRM - Bereits benutzter Token (400)
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{authBaseUrl}}/api/auth/confirm/confirm-verify-used
+  auth: none
+}
+
+docs {
+  Seed-Token confirm-verify-used (used = true) → 400 Token bereits verwendet.
+}
