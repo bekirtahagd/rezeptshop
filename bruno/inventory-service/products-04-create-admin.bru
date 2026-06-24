@@ -1,0 +1,44 @@
+meta {
+  name: INV-3 - Produkt anlegen als Admin (201)
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{inventoryBaseUrl}}/api/products
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+body:json {
+  {
+    "name": "Bruno-Testprodukt",
+    "description": "Wird im Test gleich wieder gelöscht",
+    "price": 9.99,
+    "amount": 7,
+    "category": "Test"
+  }
+}
+
+script:post-response {
+  // ID merken, damit update/delete dasselbe Produkt treffen → Suite bleibt idempotent.
+  if (res.status === 201 && res.body.product_id) {
+    bru.setEnvVar("newProductId", String(res.body.product_id));
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.product_id: isDefined
+  res.body.name: eq Bruno-Testprodukt
+}
+
+docs {
+  INV-3: Admin legt ein Produkt an (→ 201). Die neue product_id landet in {{newProductId}}
+  und wird von products-06 (update) und products-07 (delete) wiederverwendet. So erzeugt
+  jeder Lauf ein frisches Produkt und räumt es am Ende selbst wieder auf (idempotent).
+}

@@ -1,0 +1,32 @@
+meta {
+  name: INV-6 - Produkt in Warenkorb legen (200)
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{inventoryBaseUrl}}/api/cart
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "productId": 5,
+    "quantity": 1
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.cart_id: isDefined
+}
+
+docs {
+  INV-6: max legt Produkt 5 (Grüner Smoothie, Bestand 100) in den Warenkorb. Upsert —
+  beliebig oft wiederholbar (Menge wird gesetzt, nicht addiert). Antwort = aktueller Korb.
+}

@@ -1,0 +1,25 @@
+meta {
+  name: INV-6 - Warenkorb anzeigen (200)
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{inventoryBaseUrl}}/api/cart
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.cart_id: isDefined
+  res.body.total: isDefined
+}
+
+docs {
+  INV-6: zeigt den Warenkorb des eingeloggten Users mit Positionen (inkl. Produktname,
+  Preis, Zwischensumme) und Gesamtsumme.
+}

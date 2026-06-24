@@ -1,0 +1,24 @@
+meta {
+  name: INV-7 - Kaufhistorie (200)
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{inventoryBaseUrl}}/api/orders
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body[0].order_id: isDefined
+}
+
+docs {
+  INV-7: persönliche Kaufhistorie des eingeloggten Users (max), neueste Bestellung zuerst,
+  inkl. Positionen mit Preis zum Kaufzeitpunkt (purchase_price) und Gesamtsumme.
+}

@@ -1,0 +1,33 @@
+meta {
+  name: INV-5 - Produkt bearbeiten als Admin (200)
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{inventoryBaseUrl}}/api/products/{{newProductId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+body:json {
+  {
+    "price": 12.50,
+    "amount": 5
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.price: eq 12.50
+  res.body.amount: eq 5
+}
+
+docs {
+  INV-5: Admin ändert nur die übergebenen Felder (price + amount) des in products-04
+  erstellten Produkts ({{newProductId}}). Andere Felder bleiben unverändert.
+}

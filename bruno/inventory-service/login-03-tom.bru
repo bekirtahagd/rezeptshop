@@ -1,0 +1,35 @@
+meta {
+  name: LOGIN - Tom (unverifiziert) → setzt {{tomToken}}
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "tom@test.de",
+    "password": "Test1234!"
+  }
+}
+
+script:post-response {
+  // tom ist eingeloggt, aber email_verified = false → für den 403-Kauf-Test.
+  if (res.status === 200 && res.body.token) {
+    bru.setEnvVar("tomToken", res.body.token);
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.token: isDefined
+}
+
+docs {
+  Setup: meldet tom@test.de an (Login bei unbestätigter E-Mail ist erlaubt) und speichert
+  das JWT in {{tomToken}}. Wird für orders-04 (Kauf ohne Verifizierung → 403) gebraucht.
+}

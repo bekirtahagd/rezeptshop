@@ -1,0 +1,24 @@
+meta {
+  name: INV-4 - Produkt löschen als Admin (200)
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{inventoryBaseUrl}}/api/products/{{newProductId}}
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.message: isDefined
+}
+
+docs {
+  INV-4: Admin löscht das in products-04 erstellte Produkt ({{newProductId}}) → 200.
+  Räumt das Testprodukt wieder auf, damit die Suite ohne DB-Reset wiederholbar bleibt.
+}

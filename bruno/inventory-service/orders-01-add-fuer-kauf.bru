@@ -1,0 +1,32 @@
+meta {
+  name: INV-7 - Setup: Produkt für Kauf in den Korb (200)
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{inventoryBaseUrl}}/api/cart
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "productId": 5,
+    "quantity": 1
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  Setup für orders-02: stellt sicher, dass max' Warenkorb mindestens ein Produkt enthält
+  (Grüner Smoothie, Bestand 100). Nötig, weil ein vorheriger Kauf den Korb leert — so liefert
+  der Erfolgs-Checkout auch bei wiederholtem Lauf zuverlässig 201 (idempotent).
+}

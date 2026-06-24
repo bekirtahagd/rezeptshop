@@ -1,0 +1,23 @@
+meta {
+  name: INV-7 - Kauf bei leerem Warenkorb (400)
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{inventoryBaseUrl}}/api/orders
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  INV-7 Fehlerfall: Nach orders-02 ist max' Warenkorb leer → ein erneuter Checkout wird
+  mit 400 abgelehnt. Muss direkt nach orders-02 laufen.
+}

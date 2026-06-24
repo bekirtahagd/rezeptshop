@@ -1,0 +1,32 @@
+meta {
+  name: INV-3 - Produkt anlegen als User verboten (403)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{inventoryBaseUrl}}/api/products
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "name": "Sollte nicht angelegt werden",
+    "price": 1.50,
+    "amount": 3
+  }
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  INV-3 Berechtigung: ein normaler User darf keine Produkte anlegen. Der inventory-service
+  fragt den authorization-service (action 'write') → nur Admins erlaubt → 403.
+}
