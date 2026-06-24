@@ -31,4 +31,23 @@ async function sendVerificationMail(toEmail, token) {
   });
 }
 
-module.exports = { sendVerificationMail };
+// Verschickt den Einmal-Login-Link + Code für AUTH-5.
+// Token und Link sind identisch — der User kann beides verwenden.
+async function sendMagicLinkMail(toEmail, token) {
+  const baseUrl = process.env.AUTH_PUBLIC_URL || 'http://localhost:3001';
+  const loginLink = `${baseUrl}/api/auth/magic-login/${token}`;
+
+  await transporter.sendMail({
+    from: process.env.MAIL_FROM,
+    to: toEmail,
+    subject: 'Dein Einmal-Login für den Rezeptshop',
+    text: `Hallo!\n\nDu hast einen Einmal-Login angefordert.\n\nLink: ${loginLink}\n\nOder gib diesen Code ein: ${token}\n\nDer Link ist 15 Minuten gültig und kann nur einmal verwendet werden.`,
+    html: `<p>Hallo!</p>
+           <p>Du hast einen Einmal-Login angefordert.</p>
+           <p><a href="${loginLink}">Hier klicken, um dich anzumelden</a></p>
+           <p>Oder gib diesen Code ein: <strong>${token}</strong></p>
+           <p>Der Link ist 15 Minuten gültig und kann nur einmal verwendet werden.</p>`,
+  });
+}
+
+module.exports = { sendVerificationMail, sendMagicLinkMail };

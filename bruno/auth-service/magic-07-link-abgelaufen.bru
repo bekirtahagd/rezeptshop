@@ -1,0 +1,19 @@
+meta {
+  name: MAGIC-LINK - Link abgelaufen (400)
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{authBaseUrl}}/api/auth/magic-login/magic-magic-expired
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  Fehlerfall AUTH-5: abgelaufener Token aus den Dummy-Daten → 400 { error: "Token abgelaufen" }.
+  Dieser Seed-Token ändert keinen Zustand (abgelaufen = kein UPDATE), beliebig oft wiederholbar.
+}

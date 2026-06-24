@@ -23,6 +23,11 @@ script:pre-request {
   bru.setVar("regEmail", "regtest_" + Date.now() + "@test.de");
 }
 
+assert {
+  res.status: eq 201
+  res.body.message: isDefined
+}
+
 docs {
   Erfolgsfall AUTH-1: legt bei jedem Lauf einen neuen User mit eindeutiger E-Mail an → immer 201.
   Die Bestätigungsmail landet in Mailpit (http://localhost:8025); confirm-00 holt sich daraus

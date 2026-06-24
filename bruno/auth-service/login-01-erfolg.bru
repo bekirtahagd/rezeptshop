@@ -25,6 +25,11 @@ script:post-response {
   }
 }
 
+assert {
+  res.status: eq 200
+  res.body.token: isDefined
+}
+
 docs {
   Erfolgsfall AUTH-3: max@test.de / Test1234! (Dummy-Daten) → 200 { token }.
   Das post-response-Script speichert den Token automatisch in der Env-Variable {{token}}.

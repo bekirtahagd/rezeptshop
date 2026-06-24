@@ -1,0 +1,28 @@
+meta {
+  name: MAGIC-LINK - Link gültig (200)
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{authBaseUrl}}/api/auth/magic-login/{{magicToken}}
+  auth: none
+}
+
+script:post-response {
+  // Bei Erfolg das ausgestellte JWT in {{token}} speichern.
+  if (res.status === 200 && res.body.token) {
+    bru.setEnvVar("token", res.body.token);
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.token: isDefined
+}
+
+docs {
+  Erfolgsfall AUTH-5 (Link): öffnet den Magic-Link mit dem frischen Token aus magic-02 → 200 { token }.
+  Der Token ist danach verbraucht (used = true) — Einmaligkeit sichergestellt.
+  Voraussetzung: magic-01 und magic-02 liefen direkt davor.
+}

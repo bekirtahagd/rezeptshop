@@ -1,0 +1,26 @@
+meta {
+  name: MAGIC-LINK - Token aus Mailpit holen (Setup)
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{mailpitUrl}}/api/v1/message/latest
+  auth: none
+}
+
+script:post-response {
+  // Liest den 64-stelligen Magic-Token aus dem Link in der letzten Mailpit-Mail
+  // und speichert ihn als {{magicToken}} — wird von magic-03 (Link) verwendet.
+  const text = res.body && res.body.Text ? res.body.Text : "";
+  const match = text.match(/magic-login\/([a-f0-9]{64})/);
+  if (match) {
+    bru.setVar("magicToken", match[1]);
+  }
+}
+
+docs {
+  Hilfs-Request (kein Test): liest den frischen Magic-Token aus der letzten Mailpit-Mail
+  und legt ihn als {{magicToken}} ab. Setzt voraus, dass magic-01 direkt davor lief.
+  → magic-03 kann den Token dann als Link verwenden.
+}

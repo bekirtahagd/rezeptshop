@@ -9,6 +9,10 @@ get {
   auth: none
 }
 
+assert {
+  res.status: eq 404
+}
+
 docs {
   Nicht existierender Token → 404 Token nicht gefunden.
 }

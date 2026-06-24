@@ -16,6 +16,11 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 200
+  res.body.valid: eq true
+}
+
 docs {
   Interner Endpunkt für andere Services. Vorher login-01 ausführen ({{token}} muss gesetzt sein).
   → 200 { valid: true, userId, role, email }.

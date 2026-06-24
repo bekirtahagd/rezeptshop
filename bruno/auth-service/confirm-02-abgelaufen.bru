@@ -9,6 +9,10 @@ get {
   auth: none
 }
 
+assert {
+  res.status: eq 400
+}
+
 docs {
   Seed-Token confirm-verify-expired (expires_at in der Vergangenheit) → 400 Token abgelaufen.
 }

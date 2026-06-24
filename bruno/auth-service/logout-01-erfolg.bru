@@ -14,6 +14,10 @@ headers {
   Authorization: Bearer {{token}}
 }
 
+assert {
+  res.status: eq 200
+}
+
 docs {
   AUTH-4 echtes Logout: schreibt die jti des aktuellen Tokens in token_blacklist → 200 "Abgemeldet".
   Reihenfolge zum Testen: login-01 → logout-01 → danach me-01 bzw. validate-01 MIT demselben Token

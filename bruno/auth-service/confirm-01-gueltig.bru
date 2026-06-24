@@ -9,6 +9,10 @@ get {
   auth: none
 }
 
+assert {
+  res.status: eq 200
+}
+
 docs {
   Erfolgsfall AUTH-2: bestätigt den frischen Token, den confirm-00 aus Mailpit geholt hat → 200.
   Weil register-01 jedes Mal einen neuen User + Token erzeugt, klappt das bei jedem Lauf erneut

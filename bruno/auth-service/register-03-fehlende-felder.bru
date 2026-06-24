@@ -16,6 +16,10 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 400
+}
+
 docs {
   Pflichtfeld password fehlt → 400. Gleiches Verhalten bei ungültigem E-Mail-Format
   oder Passwort unter 8 Zeichen.

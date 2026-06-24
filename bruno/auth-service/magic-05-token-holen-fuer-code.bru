@@ -1,0 +1,25 @@
+meta {
+  name: MAGIC-LINK - Token aus Mailpit holen (Code-Test Setup)
+  type: http
+  seq: 23
+}
+
+get {
+  url: {{mailpitUrl}}/api/v1/message/latest
+  auth: none
+}
+
+script:post-response {
+  // Liest den Token aus der letzten Mailpit-Mail und speichert ihn als {{magicCode}}
+  // — wird von magic-06 als eingebbarer Code über POST /magic-login verwendet.
+  const text = res.body && res.body.Text ? res.body.Text : "";
+  const match = text.match(/magic-login\/([a-f0-9]{64})/);
+  if (match) {
+    bru.setVar("magicCode", match[1]);
+  }
+}
+
+docs {
+  Hilfs-Request (kein Test): holt den Token für den Code-Pfad-Test.
+  Setzt voraus, dass magic-04 direkt davor lief. → magic-06 verwendet {{magicCode}}.
+}

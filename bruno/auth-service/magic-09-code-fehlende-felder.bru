@@ -1,0 +1,25 @@
+meta {
+  name: MAGIC-LINK - Code ohne email (400)
+  type: http
+  seq: 27
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/magic-login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "code": "irgendein-code"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  Fehlerfall AUTH-5 (Code): fehlendes Pflichtfeld email → 400 { error: "email und code sind erforderlich" }.
+}

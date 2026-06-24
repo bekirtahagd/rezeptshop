@@ -9,6 +9,10 @@ get {
   auth: none
 }
 
+assert {
+  res.status: eq 400
+}
+
 docs {
   Seed-Token confirm-verify-used (used = true) → 400 Token bereits verwendet.
 }

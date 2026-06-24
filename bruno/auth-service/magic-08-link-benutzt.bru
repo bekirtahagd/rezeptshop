@@ -1,0 +1,19 @@
+meta {
+  name: MAGIC-LINK - Link bereits verwendet (400)
+  type: http
+  seq: 26
+}
+
+get {
+  url: {{authBaseUrl}}/api/auth/magic-login/magic-magic-used
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  Fehlerfall AUTH-5: bereits benutzter Token aus den Dummy-Daten → 400 { error: "Token bereits verwendet" }.
+  used = true ist idempotent — kein DB-Reset nötig, beliebig oft wiederholbar.
+}

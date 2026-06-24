@@ -1,0 +1,17 @@
+meta {
+  name: MAGIC-LINK - Mailpit-Inbox leeren (Setup)
+  type: http
+  seq: 18
+}
+
+delete {
+  url: {{mailpitUrl}}/api/v1/messages
+  auth: none
+}
+
+docs {
+  Hilfs-Request (kein Test): löscht alle Mails aus der Mailpit-Inbox, bevor der Magic-Link-Flow startet.
+  Dadurch holt magic-02 immer genau die Mail aus dem aktuellen Test-Lauf — nicht eine alte aus einem
+  früheren Durchlauf, deren Token schon verbraucht wurde.
+  Läuft nur wenn Mailpit aktiv ist (dev-Profil). Bei 404/Connection-Error einfach ignorieren.
+}

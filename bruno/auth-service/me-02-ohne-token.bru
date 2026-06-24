@@ -9,6 +9,10 @@ get {
   auth: none
 }
 
+assert {
+  res.status: eq 401
+}
+
 docs {
   Kein Authorization-Header → 401 "Kein Token".
   Grundregel der Prüfung: Anfragen ohne Authentifizierung werden abgelehnt.

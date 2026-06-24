@@ -16,6 +16,11 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 200
+  res.body.valid: eq false
+}
+
 docs {
   Ungültiger/gefälschter Token → 200 { valid: false } (kein Fehlerstatus, bewusst).
   Andere Services lehnen den Request dann mit ihrem eigenen 401 ab.

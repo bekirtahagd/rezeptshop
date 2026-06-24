@@ -17,6 +17,10 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 409
+}
+
 docs {
   verify@test.de stammt aus den Dummy-Daten → muss mit 409 (E-Mail bereits registriert)
   abgelehnt werden.

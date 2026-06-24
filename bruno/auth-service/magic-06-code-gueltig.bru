@@ -1,0 +1,34 @@
+meta {
+  name: MAGIC-LINK - Code gültig (200)
+  type: http
+  seq: 24
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/magic-login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "magic@test.de",
+    "code": "{{magicCode}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.token) {
+    bru.setEnvVar("token", res.body.token);
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.token: isDefined
+}
+
+docs {
+  Erfolgsfall AUTH-5 (Code): tippt den Token manuell als Code ein → 200 { token }.
+  Voraussetzung: magic-04 und magic-05 liefen direkt davor (frischer {{magicCode}}).
+}

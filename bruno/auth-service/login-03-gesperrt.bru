@@ -17,6 +17,10 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 403
+}
+
 docs {
   gesperrt@test.de hat locked = true (Dummy-Daten) → 403 "Konto gesperrt",
   obwohl das Passwort korrekt ist. Gesperrte User dürfen sich nicht anmelden (USER-4).

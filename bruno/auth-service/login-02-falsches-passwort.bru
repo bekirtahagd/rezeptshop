@@ -17,6 +17,10 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 401
+}
+
 docs {
   Falsches Passwort → 401 "E-Mail oder Passwort falsch".
   Bewusst dieselbe Meldung wie bei unbekannter E-Mail (keine User-Enumeration).

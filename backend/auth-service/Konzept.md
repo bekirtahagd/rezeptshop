@@ -249,7 +249,8 @@ Pflichtfelder mit `400`, `dotenv`-Pfadauflösung zum Repo-Root
    Blacklist-Prüfung einen **Live-DB-Check** auf `locked`/Existenz, damit Sperren (USER-4)
    sofort wirken — der `authenticate`-Middleware für die eigenen Endpunkte `/me`/`/logout`
    macht diesen Check bewusst nicht. Bruno-Requests angelegt.)
-5. **AUTH-5:** `magic-link`, `magic-login` (Link + Code). ← **als Nächstes**
+5. ~~**AUTH-5:** `magic-link`, `magic-login` (Link + Code).~~ ✅ erledigt
+   (`POST /magic-link`, `GET /magic-login/:token`, `POST /magic-login`; 9 Bruno-Requests angelegt.)
 6. **Bruno:** zu jedem Endpunkt eine `.bru` in `planung/bruno/auth-service/` anlegen.
 7. **Frontend (AUTH-Front):** Formulare im user-portal — eigener, späterer Schritt.
 
