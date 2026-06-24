@@ -1,0 +1,27 @@
+meta {
+  name: LOGIN - Falsches Passwort (401)
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "max@test.de",
+    "password": "falsch123"
+  }
+}
+
+assert {
+  res.status: eq 401
+}
+
+docs {
+  Falsches Passwort → 401 "E-Mail oder Passwort falsch".
+  Bewusst dieselbe Meldung wie bei unbekannter E-Mail (keine User-Enumeration).
+}

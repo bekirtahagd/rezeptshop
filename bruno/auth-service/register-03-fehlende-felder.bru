@@ -1,0 +1,26 @@
+meta {
+  name: REGISTER - Fehlende Felder (400)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "ohnepasswort@test.de"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  Pflichtfeld password fehlt → 400. Gleiches Verhalten bei ungültigem E-Mail-Format
+  oder Passwort unter 8 Zeichen.
+}

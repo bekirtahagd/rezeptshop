@@ -1,0 +1,26 @@
+meta {
+  name: MAGIC-LINK - Anfordern (200)
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/magic-link
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "magic@test.de"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  Schritt 1 von 2 (Link-Test): Fordert einen Einmal-Login für magic@test.de an → 200.
+  Danach magic-02-token-holen ausführen, um den Token aus Mailpit zu holen.
+}

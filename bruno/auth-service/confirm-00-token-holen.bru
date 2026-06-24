@@ -1,0 +1,27 @@
+meta {
+  name: CONFIRM - Token aus Mailpit holen (Setup)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{mailpitUrl}}/api/v1/message/latest
+  auth: none
+}
+
+script:post-response {
+  // Holt die zuletzt in Mailpit eingegangene Mail (= die Bestätigungsmail aus register-01)
+  // und liest den 64-stelligen Bestätigungs-Token aus dem Link im Text-Body.
+  // Damit hat confirm-01 immer einen frischen, unbenutzten Token → wiederholbar.
+  const text = res.body && res.body.Text ? res.body.Text : "";
+  const match = text.match(/confirm\/([a-f0-9]{64})/);
+  if (match) {
+    bru.setVar("confirmToken", match[1]);
+  }
+}
+
+docs {
+  Hilfs-Request (kein Test): liest den frischen Bestätigungs-Token aus der letzten Mailpit-Mail
+  und legt ihn als {{confirmToken}} ab. Setzt voraus, dass register-01 direkt davor lief und
+  Mailpit (dev-Profil) läuft. → 200 mit der Mail als JSON.
+}

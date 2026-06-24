@@ -1,0 +1,24 @@
+meta {
+  name: ME - Mit Token (200)
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{authBaseUrl}}/api/auth/me
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.email: isDefined
+}
+
+docs {
+  AUTH-2 Statusabfrage: braucht ein gültiges JWT (vorher login-01 ausführen, das {{token}} setzt).
+  → 200 { userId, email, role, email_verified }. email_verified kommt frisch aus der DB.
+}

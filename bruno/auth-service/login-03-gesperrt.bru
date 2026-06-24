@@ -1,0 +1,27 @@
+meta {
+  name: LOGIN - Gesperrter User (403)
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "gesperrt@test.de",
+    "password": "Test1234!"
+  }
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  gesperrt@test.de hat locked = true (Dummy-Daten) → 403 "Konto gesperrt",
+  obwohl das Passwort korrekt ist. Gesperrte User dürfen sich nicht anmelden (USER-4).
+}

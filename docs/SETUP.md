@@ -47,6 +47,9 @@ docker compose --profile dev up db-seed -d
 # Alles stoppen
 docker compose down
 
+# Alles Stoppen + Datenbank-Daten löschen (Entwickler Tools)
+docker compose --profile dev down -v
+
 # Alles stoppen + Datenbank-Daten löschen (sauberer Neustart)
 docker compose down -v
 ```

@@ -26,6 +26,16 @@ CREATE TABLE verification_tokens (
     created_at  TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
+-- Logout-Mechanismus (AUTH-4): Beim Abmelden wird die jti (eindeutige ID eines JWTs)
+-- hier eingetragen. Der auth-service lehnt danach jedes Token mit dieser jti ab —
+-- so wird ein eigentlich noch gültiges JWT vorzeitig ungültig ("echtes" Logout).
+-- expires_at = Ablaufzeit des Tokens; abgelaufene Einträge können aufgeräumt werden.
+CREATE TABLE token_blacklist (
+    jti         VARCHAR(255) PRIMARY KEY,
+    expires_at  TIMESTAMP    NOT NULL,
+    created_at  TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+
 -- ─────────────────────────────────────────────────────────────
 -- PRODUKTE
 -- ─────────────────────────────────────────────────────────────

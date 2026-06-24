@@ -1,0 +1,25 @@
+meta {
+  name: REGISTER - Neuer User (201)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "neu@test.de",
+    "password": "Test1234!"
+  }
+}
+
+docs {
+  Erfolgsfall AUTH-1: legt einen neuen User an und verschickt die Bestätigungsmail.
+  Die Mail landet in Mailpit (http://localhost:8025).
+  Bei erneutem Ausführen kommt 409, weil neu@test.de dann schon existiert
+  (DB mit "docker compose down -v" zurücksetzen, um wieder 201 zu bekommen).
+}

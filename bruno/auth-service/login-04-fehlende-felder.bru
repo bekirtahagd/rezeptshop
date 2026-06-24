@@ -1,0 +1,25 @@
+meta {
+  name: LOGIN - Fehlende Felder (400)
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "max@test.de"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  password fehlt → 400 "email und password sind erforderlich".
+}

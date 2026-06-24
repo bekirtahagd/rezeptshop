@@ -1,0 +1,27 @@
+meta {
+  name: MAGIC-LINK - Anfordern für Code-Test (200)
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/magic-link
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "magic@test.de"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  Schritt 1 von 2 (Code-Test): Fordert einen zweiten Einmal-Login an, damit magic-06
+  den Code-Pfad (POST /magic-login) mit einem frischen, unbenutzten Token testen kann.
+  Danach magic-05-token-holen-fuer-code ausführen.
+}
