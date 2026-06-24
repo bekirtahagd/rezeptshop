@@ -1,0 +1,25 @@
+meta {
+  name: USER-4 - Sperren als User verboten (403)
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{userBaseUrl}}/api/users/{{throwUserId}}/lock
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  USER-4 Berechtigung: ein normaler User (max) darf niemanden sperren. Der user-service fragt
+  den authorization-service (action 'lock') → nur Admins erlaubt → 403. Der Wegwerf-User
+  bleibt entsperrt.
+}

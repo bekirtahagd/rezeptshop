@@ -1,0 +1,23 @@
+meta {
+  name: USER-4 - Admin sperrt sich selbst verboten (400)
+  type: http
+  seq: 14
+}
+
+put {
+  url: {{userBaseUrl}}/api/users/1/lock
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  USER-4 Self-Lockout-Schutz: admin@test.de (user_id 1) versucht sich selbst zu sperren → 400.
+}

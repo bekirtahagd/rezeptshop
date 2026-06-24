@@ -1,0 +1,31 @@
+meta {
+  name: USER-3 - Admin anlegen als User verboten (403)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{userBaseUrl}}/api/users/admin
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "email": "sollte-nicht-entstehen@test.de",
+    "password": "Test1234!"
+  }
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  USER-3 Berechtigung: ein normaler User darf keine Admins anlegen. Der user-service fragt den
+  authorization-service (action 'create') → nur Admins erlaubt → 403.
+}

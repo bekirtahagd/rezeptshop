@@ -1,0 +1,25 @@
+meta {
+  name: USER-1 - User liest eigenes Profil (200)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{userBaseUrl}}/api/users/2
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.user_id: eq 2
+  res.body.password: isUndefined
+}
+
+docs {
+  USER-1: max (user_id 2) liest sein EIGENES Profil → erlaubt (action 'read' auf eigene ID).
+}

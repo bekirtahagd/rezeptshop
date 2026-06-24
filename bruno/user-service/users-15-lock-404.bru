@@ -1,0 +1,23 @@
+meta {
+  name: USER-4 - Unbekannte ID sperren (404)
+  type: http
+  seq: 17
+}
+
+put {
+  url: {{userBaseUrl}}/api/users/999999/lock
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+assert {
+  res.status: eq 404
+}
+
+docs {
+  USER-4: Admin sperrt eine nicht existierende ID → 404 (Berechtigung ok, User aber nicht da).
+}

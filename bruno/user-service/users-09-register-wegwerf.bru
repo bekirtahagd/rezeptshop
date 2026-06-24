@@ -1,0 +1,32 @@
+meta {
+  name: USER-2 Setup - Wegwerf-User registrieren
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/register
+  body: json
+  auth: none
+}
+
+script:pre-request {
+  // Eindeutige Wegwerf-E-Mail pro Lauf — wird in users-10/11 für die Selbst-Löschung genutzt.
+  bru.setEnvVar("throwEmail", "wegwerf-" + Date.now() + "@test.de");
+}
+
+body:json {
+  {
+    "email": "{{throwEmail}}",
+    "password": "Test1234!"
+  }
+}
+
+assert {
+  res.status: eq 201
+}
+
+docs {
+  Setup für die Selbst-Löschung (USER-2): legt einen frischen normalen User an, der sich in
+  users-11 selbst löscht. Kein Assert auf Body (register liefert nur eine Nachricht).
+}

@@ -1,0 +1,30 @@
+meta {
+  name: USER-3 - Doppelte E-Mail (409)
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{userBaseUrl}}/api/users/admin
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+body:json {
+  {
+    "email": "{{brunoAdminEmail}}",
+    "password": "Test1234!"
+  }
+}
+
+assert {
+  res.status: eq 409
+}
+
+docs {
+  USER-3: derselbe Admin (gleiche E-Mail aus users-05) wird ein zweites Mal angelegt → 409.
+}

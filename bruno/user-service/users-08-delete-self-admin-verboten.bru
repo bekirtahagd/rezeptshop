@@ -1,0 +1,24 @@
+meta {
+  name: USER-2 - Admin löscht eigenen Account verboten (400)
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{userBaseUrl}}/api/users/1
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  USER-2 Self-Lockout-Schutz: admin@test.de (user_id 1) versucht den EIGENEN Account zu
+  löschen → 400. So kann sich der letzte Admin nicht selbst entfernen.
+}

@@ -1,0 +1,24 @@
+meta {
+  name: USER-2 - Admin löscht fremden Account / Cleanup (200)
+  type: http
+  seq: 19
+}
+
+delete {
+  url: {{userBaseUrl}}/api/users/{{newAdminId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  USER-2: Admin löscht einen fremden Account (den in users-05 angelegten Admin) → 200. Dient
+  zugleich als Aufräumen, damit die nächste Suite-Ausführung wieder mit frischer DB startet.
+}

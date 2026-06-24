@@ -1,0 +1,24 @@
+meta {
+  name: USER-2 - User löscht eigenen Account (200)
+  type: http
+  seq: 18
+}
+
+delete {
+  url: {{userBaseUrl}}/api/users/{{throwUserId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{throwToken}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  USER-2: Ein normaler User darf seinen EIGENEN Account löschen → 200. (Selbst-Löschung ist
+  erlaubt, anders als beim Admin.) Räumt zugleich den Wegwerf-User aus den USER-4-Tests weg.
+}

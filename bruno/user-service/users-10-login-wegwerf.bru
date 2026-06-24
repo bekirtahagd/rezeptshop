@@ -1,0 +1,41 @@
+meta {
+  name: USER-2 Setup - Wegwerf-User einloggen (Token + ID)
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{authBaseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{throwEmail}}",
+    "password": "Test1234!"
+  }
+}
+
+script:post-response {
+  // Token merken und die eigene userId aus dem JWT-Payload (mittlerer Teil) auslesen,
+  // damit der User in users-11 seinen EIGENEN Account löschen kann.
+  if (res.status === 200 && res.body.token) {
+    bru.setEnvVar("throwToken", res.body.token);
+    // JWT-Payload (mittlerer Teil) dekodieren. Bruno kennt kein 'base64url', daher
+    // base64url -> base64 umwandeln (- -> +, _ -> /) und mit Standard-'base64' lesen.
+    const payload = res.body.token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const json = JSON.parse(Buffer.from(payload, "base64").toString());
+    bru.setEnvVar("throwUserId", String(json.userId));
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.token: isDefined
+}
+
+docs {
+  Setup: meldet den Wegwerf-User an, speichert sein JWT in {{throwToken}} und seine ID in
+  {{throwUserId}} (aus dem Token dekodiert).
+}

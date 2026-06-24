@@ -1,0 +1,24 @@
+meta {
+  name: USER-1 - User liest fremdes Profil verboten (403)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{userBaseUrl}}/api/users/1
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  USER-1: max (user_id 2) versucht das Admin-Profil (user_id 1) zu lesen → der
+  authorization-service erlaubt einem normalen User nur das eigene Profil → 403.
+}

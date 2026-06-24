@@ -1,0 +1,25 @@
+meta {
+  name: USER-4 - Admin entsperrt User (200)
+  type: http
+  seq: 16
+}
+
+put {
+  url: {{userBaseUrl}}/api/users/{{throwUserId}}/unlock
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.locked: eq false
+}
+
+docs {
+  USER-4: Admin entsperrt den Wegwerf-User wieder → 200, locked:false. Danach ist sein Token
+  wieder gültig (für die Selbst-Löschung in users-16).
+}
