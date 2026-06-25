@@ -502,6 +502,68 @@ textarea:focus {
 .toast.error { background-color: #b4503c; }
 .toast.info { background-color: var(--color-text); }
 
+/* Bestellhistorie */
+.order-card {
+  background-color: var(--color-card);
+  border: 1px solid #eee;
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.order-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  margin-bottom: 0.75rem;
+}
+
+.order-status {
+  background-color: var(--color-primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+}
+
+.order-date {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin-left: auto;
+}
+
+.order-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.order-table th,
+.order-table td {
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #f0e9e0;
+  text-align: left;
+}
+
+.order-table th {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.order-table .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.order-total {
+  margin-top: 0.75rem;
+  text-align: right;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
 /* Suchleiste auf der Produktseite */
 .search-bar {
   display: flex;

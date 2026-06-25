@@ -71,15 +71,15 @@ function renderCart(cart) {
   total.className = 'cart-total';
   total.innerHTML = `<span>Gesamt</span><span>${formatPrice(cart.total)}</span>`;
 
-  const checkout = document.createElement('button');
-  checkout.className = 'checkout-button';
-  checkout.textContent = 'Zur Kasse';
-  checkout.addEventListener('click', checkoutStub);
+  const checkoutBtn = document.createElement('button');
+  checkoutBtn.className = 'checkout-button';
+  checkoutBtn.textContent = 'Zur Kasse';
+  checkoutBtn.addEventListener('click', () => checkout(checkoutBtn));
 
   container.innerHTML = '';
   container.appendChild(list);
   container.appendChild(total);
-  container.appendChild(checkout);
+  container.appendChild(checkoutBtn);
 }
 
 // Setzt die Menge einer Position absolut (Backend-Semantik). Bei < 1 nichts tun.
@@ -109,9 +109,17 @@ async function removeItem(productId, name) {
   }
 }
 
-// Platzhalter bis Etappe 4 die echte Kasse (POST /api/orders) ergänzt.
-function checkoutStub() {
-  showMsg('Die Kasse folgt in Etappe 4.', 'info');
+// Kauf abschließen (INV-7). Erfolg -> zur Bestellhistorie mit Erfolgs-Banner.
+// Fehlerfälle: leerer Korb (400), unbestätigte E-Mail (403) -> als Toast.
+async function checkout(btn) {
+  btn.disabled = true;
+  try {
+    const order = await apiFetch(SERVICES.inventory + '/api/orders', { method: 'POST' });
+    window.location.href = 'bestellungen.html?neu=' + order.order_id;
+  } catch (err) {
+    showToast(err.message, 'error');
+    btn.disabled = false;
+  }
 }
 
 // ---------- Bootstrap ----------
