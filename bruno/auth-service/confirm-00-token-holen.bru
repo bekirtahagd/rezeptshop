@@ -11,10 +11,11 @@ get {
 
 script:post-response {
   // Holt die zuletzt in Mailpit eingegangene Mail (= die Bestätigungsmail aus register-01)
-  // und liest den 64-stelligen Bestätigungs-Token aus dem Link im Text-Body.
-  // Damit hat confirm-01 immer einen frischen, unbenutzten Token → wiederholbar.
+  // und liest den 64-stelligen Bestätigungs-Token aus dem Frontend-Link
+  // (confirm.html?token=...) im Text-Body. Damit hat confirm-01 immer einen frischen,
+  // unbenutzten Token → wiederholbar.
   const text = res.body && res.body.Text ? res.body.Text : "";
-  const match = text.match(/confirm\/([a-f0-9]{64})/);
+  const match = text.match(/token=([a-f0-9]{64})/);
   if (match) {
     bru.setVar("confirmToken", match[1]);
   }

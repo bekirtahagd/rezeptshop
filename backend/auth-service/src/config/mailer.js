@@ -13,11 +13,13 @@ const transporter = nodemailer.createTransport({
     : undefined,
 });
 
-// Verschickt die Bestätigungsmail mit dem Link …/api/auth/confirm/<token>.
-// AUTH_PUBLIC_URL = öffentliche Basis-URL des auth-service (Fallback: localhost:3001).
+// Verschickt die Bestätigungsmail mit einem Link auf die Frontend-Seite confirm.html.
+// FRONTEND_URL = Basis-URL des user-portals (Fallback: localhost:8080). Die Seite liest den
+// Token aus der URL und ruft GET /api/auth/confirm/:token auf — so sieht der User eine
+// echte Seite statt rohem JSON.
 async function sendVerificationMail(toEmail, token) {
-  const baseUrl = process.env.AUTH_PUBLIC_URL || 'http://localhost:3001';
-  const confirmLink = `${baseUrl}/api/auth/confirm/${token}`;
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+  const confirmLink = `${frontendUrl}/confirm.html?token=${token}`;
 
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
@@ -32,10 +34,12 @@ async function sendVerificationMail(toEmail, token) {
 }
 
 // Verschickt den Einmal-Login-Link + Code für AUTH-5.
-// Token und Link sind identisch — der User kann beides verwenden.
+// Der Link zeigt auf die Frontend-Seite magic.html, die den Token aus der URL liest, ihn gegen
+// ein JWT tauscht (GET /api/auth/magic-login/:token) und in den Shop weiterleitet. Der Code
+// (= derselbe Token) steht zusätzlich in der Mail für die Code-Variante im Frontend.
 async function sendMagicLinkMail(toEmail, token) {
-  const baseUrl = process.env.AUTH_PUBLIC_URL || 'http://localhost:3001';
-  const loginLink = `${baseUrl}/api/auth/magic-login/${token}`;
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+  const loginLink = `${frontendUrl}/magic.html?token=${token}`;
 
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
