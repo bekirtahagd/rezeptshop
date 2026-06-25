@@ -38,7 +38,8 @@ Passwort überall: **`Test1234!`**
 1. http://localhost:8080/login.html öffnen → Tab **Registrieren**.
 2. E-Mail und Passwort (mind. 8 Zeichen) eingeben → **Registrieren**.
 3. Eine Bestätigungsmail wird verschickt. Im Dev liegt sie in **Mailpit**
-   (http://localhost:8025) — dort den Bestätigungslink öffnen.
+   (http://localhost:8025) — dort den **Bestätigungslink** öffnen. Er führt auf eine Seite
+   des Shops (`confirm.html`), die die Bestätigung durchführt und zur Anmeldung verlinkt.
 4. Danach im Tab **Login** anmelden.
 
 > Hinweis: Einkaufen (Kasse) ist erst möglich, wenn die E-Mail bestätigt ist.
@@ -46,8 +47,9 @@ Passwort überall: **`Test1234!`**
 ### 2.2 Anmelden
 - **Login**: E-Mail + Passwort eingeben.
 - **Magic-Link** (Login ohne Passwort): Tab **Magic-Link** → E-Mail eingeben →
-  **Code anfordern**. Den zugesandten Code aus **Mailpit** kopieren, unten eintragen und
-  **Einloggen**.
+  **Code anfordern**. Zwei Wege:
+  - **Link** in der Mail (Mailpit) anklicken → meldet dich automatisch an und führt in den Shop.
+  - oder den **Code** aus der Mail kopieren, unten eintragen und **Einloggen**.
 
 Oben rechts erscheinen nach dem Login die eigene E-Mail und User-ID sowie **Logout**.
 
