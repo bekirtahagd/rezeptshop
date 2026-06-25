@@ -69,8 +69,9 @@ async function renderNav() {
     return;
   }
 
+  // E-Mail + eigene User-ID anzeigen (die ID braucht man z. B. zum Teilen von Wunschlisten).
   slot.innerHTML =
-    `<span class="nav-user">${user.email}</span>` +
+    `<span class="nav-user">${user.email} (#${user.userId})</span>` +
     '<button type="button" class="linklike" id="nav-logout">Logout</button>';
   document.getElementById('nav-logout').addEventListener('click', logout);
 }
