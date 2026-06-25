@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rezeptshop Admin — Benutzer</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Rezeptshop <span class="admin-badge">Admin</span></h1>
+    <nav>
+      <a href="index.html">Dashboard</a>
+      <a href="produkte.html">Produkte</a>
+      <a href="benutzer.html">Benutzer</a>
+      <span id="nav-session"></span>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h2>Benutzer nachschlagen</h2>
+      <p class="hint">
+        Der user-service bietet keine Listen-/Suchfunktion — bitte die User-ID eingeben.
+        Test-IDs: 1 = admin, 2 = max, 3 = anna, 4 = tom.
+      </p>
+      <form id="lookup-form" class="lookup-bar">
+        <input type="number" id="lookup-id" min="1" placeholder="User-ID" required>
+        <button type="submit" class="btn">Suchen</button>
+      </form>
+      <div id="lookup-msg"></div>
+      <div id="user-result"></div>
+    </section>
+
+    <section>
+      <h2>Admin-Konto anlegen</h2>
+      <form id="admin-form" class="admin-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="a-email">E-Mail *</label>
+            <input type="email" id="a-email" required>
+          </div>
+          <div class="form-group">
+            <label for="a-password">Passwort *</label>
+            <input type="password" id="a-password" required minlength="8">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn">Admin anlegen</button>
+        </div>
+      </form>
+      <div id="admin-msg"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Rezeptshop — Administration</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/benutzer.js"></script>
+</body>
+</html>
