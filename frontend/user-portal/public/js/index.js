@@ -81,17 +81,26 @@ function renderProducts(products) {
   }
 }
 
-// Legt ein Produkt in den Warenkorb (Menge 1). 409 = nicht verfügbar / zu viel.
+// Legt ein Produkt in den Warenkorb bzw. erhöht die Menge, falls es schon drin ist.
+// Das Backend SETZT die Menge absolut -> wir lesen die aktuelle Menge und schicken +1.
+// 409 = nicht verfügbar / Bestand überschritten.
 async function addToCart(product) {
-  clearMsg();
   try {
-    await apiFetch(SERVICES.inventory + '/api/cart', {
+    const cart = await apiFetch(SERVICES.inventory + '/api/cart');
+    const existing = cart.items.find((i) => i.product_id === product.product_id);
+    const newQty = (existing ? Number(existing.quantity) : 0) + 1;
+
+    const updated = await apiFetch(SERVICES.inventory + '/api/cart', {
       method: 'POST',
-      body: { productId: product.product_id, quantity: 1 },
+      body: { productId: product.product_id, quantity: newQty },
     });
-    showMsg(`„${product.name}" wurde in den Warenkorb gelegt.`, 'ok');
+
+    const inCart = updated.items.find((i) => i.product_id === product.product_id);
+    const qty = inCart ? inCart.quantity : newQty;
+    // Toast statt Inline-Meldung: auch beim Hinzufügen aus der unteren Seitenhälfte sichtbar.
+    showToast(`„${product.name}" im Warenkorb — Menge: ${qty}.`, 'ok');
   } catch (err) {
-    showMsg(err.message, 'error');
+    showToast(err.message, 'error');
   }
 }
 

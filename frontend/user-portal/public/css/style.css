@@ -221,21 +221,71 @@ section {
 }
 
 .cart-list {
-  max-width: 500px;
+  max-width: 640px;
   margin: 1.5rem 0;
 }
 
 .cart-item {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 1rem;
   padding: 0.75rem 0;
   border-bottom: 1px solid #eee;
+}
+
+.cart-name {
+  font-weight: 600;
+}
+
+.cart-qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.qty-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d8cfc2;
+  background-color: #fffdfb;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.qty-btn:hover:not(:disabled) {
+  background-color: #f0e6da;
+}
+
+.qty-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qty-value {
+  min-width: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.cart-subtotal {
+  font-weight: 600;
+  min-width: 5rem;
+  text-align: right;
+}
+
+.cart-remove {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
 }
 
 .cart-total {
   display: flex;
   justify-content: space-between;
-  max-width: 500px;
+  max-width: 640px;
   padding: 0.75rem 0;
   font-weight: 700;
   font-size: 1.1rem;
@@ -417,6 +467,40 @@ textarea:focus {
 .hidden {
   display: none !important;
 }
+
+/* Toast-Benachrichtigungen (unten rechts, fix positioniert) */
+.toast-container {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 1000;
+}
+
+.toast {
+  min-width: 220px;
+  max-width: 320px;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast.ok { background-color: var(--color-primary); }
+.toast.error { background-color: #b4503c; }
+.toast.info { background-color: var(--color-text); }
 
 /* Suchleiste auf der Produktseite */
 .search-bar {

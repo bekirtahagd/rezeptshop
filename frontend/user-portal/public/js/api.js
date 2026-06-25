@@ -17,6 +17,28 @@ function formatPrice(value) {
   return n.toFixed(2).replace('.', ',') + ' €';
 }
 
+// Kurz eingeblendete Benachrichtigung unten rechts — immer sichtbar, egal wie weit
+// die Seite gescrollt ist. Verschwindet nach `duration` ms von selbst.
+// type: 'ok' | 'error' | 'info'
+function showToast(text, type = 'info', duration = 3200) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.textContent = text; // textContent -> kein HTML-Injection-Risiko
+  container.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
 // Zentraler fetch-Wrapper:
 //  - hängt automatisch den Bearer-Token an (sofern vorhanden und auth !== false)
 //  - schickt/parst JSON
