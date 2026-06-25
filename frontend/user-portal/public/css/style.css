@@ -142,17 +142,6 @@ footer {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.product-image {
-  background-color: #f0e6da;
-  height: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-muted);
-  border-radius: var(--radius);
-  margin-bottom: 0.75rem;
-}
-
 .product-card button {
   margin-top: auto; /* drückt den Button an den unteren Kartenrand */
   padding: 0.5rem 1.25rem;

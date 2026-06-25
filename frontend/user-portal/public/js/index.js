@@ -64,7 +64,6 @@ function renderProducts(products) {
     const card = document.createElement('article');
     card.className = 'product-card';
     card.innerHTML = `
-      <div class="product-image">Bild</div>
       ${p.category ? `<span class="tag">${escapeHtml(p.category)}</span>` : ''}
       <h3>${escapeHtml(p.name)}</h3>
       <p class="card-desc">${escapeHtml(p.description || '')}</p>
