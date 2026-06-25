@@ -780,3 +780,33 @@ header {
 
 .dash-card h3 { color: var(--color-primary-dark); margin-bottom: 0.4rem; }
 .dash-card p { color: var(--color-text-muted); font-size: 0.92rem; }
+
+/* Admin-Formulare (Produkt-/User-Anlage/Bearbeitung) */
+.admin-form {
+  background-color: var(--color-card);
+  border: 1px solid #eee;
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.form-grid .form-group.full {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+.data-table td .btn.small { margin-right: 0.35rem; }
