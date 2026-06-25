@@ -10,6 +10,30 @@
 --   node -e "console.log(require('bcryptjs').hashSync('Test1234!',10))"
 
 -- ─────────────────────────────────────────────────────────────
+-- IDEMPOTENZ — db-seed ist ein Dev-RESET
+-- ─────────────────────────────────────────────────────────────
+-- Vor dem Befüllen ALLE App-Tabellen leeren und die Serial-IDs zurücksetzen.
+-- Grund: db-seed läuft bei jedem `docker compose --profile dev up` erneut. Ohne diesen
+-- Reset fügen die nicht-eindeutigen INSERTs (products/orders/wishlists) bei jedem Lauf neue
+-- Kopien ein → doppelte Produkte usw. Mit TRUNCATE ist der Stand nach jedem Lauf identisch.
+--
+-- ACHTUNG: Das löscht auch zur Laufzeit selbst angelegte Accounts/Daten (z. B. via
+-- Registrierung im Frontend). Genau das ist gewollt — db-seed setzt den Dev-Stand zurück.
+TRUNCATE TABLE
+  token_blacklist,
+  permissions,
+  wishlist_product,
+  wishlists,
+  orderpositions,
+  orders,
+  cart_items,
+  carts,
+  verification_tokens,
+  products,
+  users
+RESTART IDENTITY CASCADE;
+
+-- ─────────────────────────────────────────────────────────────
 -- USERS
 -- Abdeckung: AUTH-1/3, USER-1/2/3/4
 -- ─────────────────────────────────────────────────────────────

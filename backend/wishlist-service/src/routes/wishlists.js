@@ -265,7 +265,9 @@ router.post('/:id/share', async (req, res) => {
   if (!targetUserId || !authorizationType) {
     return res.status(400).json({ error: 'userId und authorizationType sind erforderlich' });
   }
-  const validTypes = ['read', 'write', 'owner'];
+  // owner ist NICHT teilbar: Eine Liste hat genau einen Besitzer (Aufgabenstellung).
+  // Teilen vergibt nur Lese- oder Schreibrechte.
+  const validTypes = ['read', 'write'];
   if (!validTypes.includes(authorizationType)) {
     return res.status(400).json({ error: `Ungültiger authorizationType. Erlaubt: ${validTypes.join(', ')}` });
   }

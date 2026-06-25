@@ -83,7 +83,8 @@ frontend/user-portal/public/
 Der Inhalt von `public/` ist der **Webroot**. `public/index.html` wird automatisch
 angezeigt, wenn man `http://localhost:8080/` aufruft.
 
-> Hinweis: Der `src/`-Ordner (falls vorhanden) ist nur zur lokalen Organisation gedacht.
+> Hinweis: Es gibt bewusst **keinen** `src/`-Ordner. Da das Frontend nicht gebaut/kompiliert
+> wird, liegen HTML, CSS und JS direkt fertig in `public/` (gegliedert in `css/` und `js/`).
 > Ausgeliefert wird **ausschließlich** der Inhalt von `public/`, weil nur dieser Ordner in
 > den nginx-Container gemountet wird.
 

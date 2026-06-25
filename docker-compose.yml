@@ -89,6 +89,9 @@ services:
       MAIL_USER: ${MAIL_USER}
       MAIL_PASS: ${MAIL_PASS}
       MAIL_FROM: ${MAIL_FROM}
+      # Basis-URL des user-portals fuer die Links in Bestaetigungs-/Magic-Link-Mails.
+      # Der Browser laeuft immer auf dem Host -> localhost:8080.
+      FRONTEND_URL: http://localhost:8080
     ports:
       - "3001:3001"
     depends_on:

@@ -1,0 +1,32 @@
+meta {
+  name: WUN-4 teilen mit owner → 400 (nicht teilbar)
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{wishlistBaseUrl}}/api/wishlists/{{newListId}}/share
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "userId": 3,
+    "authorizationType": "owner"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+docs {
+  WUN-4: 'owner' ist NICHT teilbar — eine Liste hat genau einen Besitzer. Der Share-Endpoint
+  akzeptiert nur 'read' und 'write', daher liefert authorizationType 'owner' ein 400
+  (Validierung vor dem Listen-Lookup). Läuft vor dem Cleanup (seq 22).
+}

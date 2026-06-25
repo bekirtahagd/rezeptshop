@@ -74,3 +74,42 @@ docker compose -f rezeptshop/docker-compose.yml --profile dev up pgadmin -d
   `docker-compose.yml`) — das ist Komfort, keine Notwendigkeit.
 - Wichtig zur Einordnung: Das ist **kein Fehler in unserem `docker-compose.yml`** und auch
   nicht in einem Service, sondern ein bekanntes Verhalten von Windows/Docker.
+
+---
+
+## 2. Browser warnt nach der Registrierung: „Passwort in Datenleck gefunden"
+
+**Symptom**
+
+Direkt nach der Registrierung (oder beim Speichern im Passwort-Manager) zeigt der Browser
+eine Warnung wie „Dieses Passwort wurde bei einem Datenleck gefunden" / „in a data breach" /
+„Passwort kompromittiert".
+
+**Ursache**
+
+Das ist eine **eingebaute Sicherheitsfunktion des Browsers** (Chrome/Edge „Password Monitor",
+Firefox „Firefox Monitor"), **nicht** ein Fehler in unserem Backend. Der Browser vergleicht
+das **eingegebene Passwort** mit öffentlich bekannten Leak-Listen (Datenbasis: *Have I Been
+Pwned*). Unsere üblichen **Test-Passwörter** (z. B. `Test1234!`) sind extrem verbreitet und
+stehen daher in diesen Listen — deshalb die Warnung. Es bedeutet **nicht**, dass unser Server
+das Passwort preisgegeben hat.
+
+**Einordnung (wichtig)**
+
+- Unser `auth-service` speichert Passwörter ausschließlich als **`bcryptjs`-Hash**, nie im
+  Klartext. Aus unserer Datenbank „leakt" also nichts — die Warnung bezieht sich allein auf
+  das *gewählte* Passwort, nicht auf unsere Speicherung.
+- Zusätzlich liefern wir das Frontend im Dev über **http** (nicht https) aus. Manche Browser
+  markieren Passwortfelder dann separat als „nicht sicher" — das ist ein anderer Hinweis, hat
+  aber dieselbe harmlose Ursache (lokale Entwicklungsumgebung ohne TLS).
+
+**Lösung**
+
+- Für eigene Test-Accounts ein **einzigartiges, nicht-triviales Passwort** verwenden — dann
+  verschwindet die Leak-Warnung. Die vorgegebenen Demo-Accounts (`Test1234!`) lösen die
+  Warnung absichtlich aus und können bedenkenlos bestätigt/ignoriert werden.
+- In einer echten Produktivumgebung würde das Frontend über **https** ausgeliefert; die
+  „nicht sicher"-Markierung entfällt dann.
+- **Optionale Verschärfung im Backend (kein Muss):** Im `register`-Endpoint zusätzlich gegen
+  die HaveIBeenPwned-*Range*-API (k-Anonymity) prüfen und kompromittierte Passwörter ablehnen.
+  Bewusst als eigene Erweiterung, nicht Teil der Pflichtanforderungen.

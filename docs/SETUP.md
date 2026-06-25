@@ -32,31 +32,33 @@ Kein manuelles `npm install` nötig.
 **Ihr müsst docker desktop gestartet haben!!**
 
 ```bash
-# Nur Datenbank starten (zum Entwickeln eines einzelnen Services lokal)
-docker compose up postgres -d
+# ⭐ EMPFOHLEN: GESAMTES Projekt starten — alle 5 Services + DB + beide Frontends
+#    + Mailpit + Dummy-Daten + pgAdmin. --build baut die Backend-Images neu
+#    (beim ERSTEN Mal und nach jeder Code-Änderung nötig).
+docker compose --profile dev up -d --build
 
-# Datenbank + pgAdmin + Dummy-Daten + Mailpit starten (empfohlen für Entwicklung)
+# Nur Datenbank + Dev-Tools (zum lokalen Entwickeln eines EINZELNEN Services via npm start)
 docker compose --profile dev up postgres pgadmin db-seed mailpit -d
 
-# Alles starten (alle Services + DB + Frontends) — erst wenn alle Dockerfiles befüllt sind
-docker compose up -d
+# Nur Datenbank starten
+docker compose up postgres -d
 
-# Alles starten inkl. pgAdmin + Dummy-Daten
-docker compose --profile dev up db-seed -d
-
-# Alles stoppen
-docker compose down
-
-# Alles Stoppen + Datenbank-Daten löschen (Entwickler Tools)
-docker compose --profile dev down -v
+# Alles stoppen (Datenbank-Daten bleiben erhalten)
+docker compose --profile dev down
 
 # Alles stoppen + Datenbank-Daten löschen (sauberer Neustart)
-docker compose down -v
+docker compose --profile dev down -v
 ```
 
-> **Wichtig:** `docker compose up` schlägt fehl solange ein Service ein leeres Dockerfile hat.
-> Einzelne Services können mit `docker compose up postgres` gezielt gestartet werden
-> sobald ihr Dockerfile befüllt ist.
+> **Warum `--profile dev`?** Ohne dieses Profil starten zwar alle Services + Frontends, aber
+> **mailpit** (Mailversand), **db-seed** (Test-Daten) und **pgAdmin** fehlen — dann gibt es
+> keine Test-Accounts/Produkte und Mail-Features (Registrierung, Magic-Link, Kaufbestätigung)
+> schlagen fehl. Für einen vollständig nutzbaren Stack daher immer mit `--profile dev`.
+>
+> **Vorher lokale `npm start`-Services beenden!** Laufen die noch, belegen sie die Ports
+> 3001–3005 und Docker bricht mit einem Port-Bind-Fehler ab.
+>
+> **`db-seed` beendet sich nach dem Laden von selbst** (`Exited (0)`) — das ist gewollt, kein Fehler.
 
 ---
 

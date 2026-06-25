@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rezeptshop</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1><a href="index.html">Rezeptshop</a></h1>
+    <nav>
+      <a href="index.html">Produkte</a>
+      <a href="warenkorb.html">Warenkorb</a>
+      <a href="bestellungen.html">Bestellungen</a>
+      <a href="wunschliste.html">Wunschliste</a>
+      <span id="nav-session"></span>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h2>Frische Rezepte, fertig zum Kochen</h2>
+    <p>Entdecke unsere Auswahl an Rezeptboxen – von vegan bis herzhaft.</p>
+  </section>
+
+  <main>
+    <section id="produkte">
+      <h2>Produkte</h2>
+
+      <!-- Suche (INV-2): Name + Kategorie, serverseitig gefiltert -->
+      <form id="search-form" class="search-bar">
+        <input type="search" id="search-name" placeholder="Nach Name suchen …">
+        <select id="search-category">
+          <option value="">Alle Kategorien</option>
+        </select>
+        <button type="submit" class="btn">Suchen</button>
+        <button type="button" class="btn accent" id="search-reset">Zurücksetzen</button>
+      </form>
+
+      <div id="products-msg"></div>
+
+      <div class="product-grid" id="product-grid">
+        <p>Produkte werden geladen …</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Rezeptshop</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>
