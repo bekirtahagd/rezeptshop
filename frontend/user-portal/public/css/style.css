@@ -131,6 +131,10 @@ footer {
   padding: 1.25rem;
   text-align: center;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  /* Flex-Spalte: egal wie lang die Beschreibung ist, der Button sitzt
+     immer unten und ist über alle Karten einer Reihe auf gleicher Höhe. */
+  display: flex;
+  flex-direction: column;
 }
 
 .product-card:hover {
@@ -150,7 +154,7 @@ footer {
 }
 
 .product-card button {
-  margin-top: 0.5rem;
+  margin-top: auto; /* drückt den Button an den unteren Kartenrand */
   padding: 0.5rem 1.25rem;
   background-color: var(--color-accent);
   color: white;
@@ -164,6 +168,13 @@ footer {
 
 .product-card button:hover {
   background-color: #d6824a;
+}
+
+/* Ausverkauft: rot und nicht klickbar — klar vom orangen Kauf-Button unterscheidbar */
+.product-card button.soldout,
+.product-card button.soldout:hover {
+  background-color: #b4503c;
+  cursor: not-allowed;
 }
 
 .hero {
@@ -405,4 +416,41 @@ textarea:focus {
 
 .hidden {
   display: none !important;
+}
+
+/* Suchleiste auf der Produktseite */
+.search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  align-items: center;
+}
+
+.search-bar input[type="search"] {
+  flex: 1 1 220px;
+  width: auto;
+}
+
+.search-bar select {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+/* Zusatz-Infos in der Produktkarte */
+.card-desc {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin: 0.25rem 0;
+}
+
+.card-price {
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin: 0.25rem 0;
+}
+
+.card-stock {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
 }

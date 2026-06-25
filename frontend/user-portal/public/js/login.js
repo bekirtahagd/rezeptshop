@@ -15,6 +15,11 @@ function clearMsg(id) {
   document.getElementById(id).innerHTML = '';
 }
 
+// Wurde man wegen abgelaufener/ungültiger Session hierher geleitet? Freundlich erklären.
+if (new URLSearchParams(location.search).get('session') === 'expired') {
+  showMsg('login-msg', 'Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.', 'info');
+}
+
 // ---------- Tab-Umschaltung ----------
 const tabButtons = document.querySelectorAll('.tabs button');
 const sections = {

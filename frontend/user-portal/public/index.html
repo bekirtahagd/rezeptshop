@@ -25,9 +25,21 @@
   <main>
     <section id="produkte">
       <h2>Produkte</h2>
-      <!-- Etappe 2 füllt dieses Grid dynamisch per fetch. -->
+
+      <!-- Suche (INV-2): Name + Kategorie, serverseitig gefiltert -->
+      <form id="search-form" class="search-bar">
+        <input type="search" id="search-name" placeholder="Nach Name suchen …">
+        <select id="search-category">
+          <option value="">Alle Kategorien</option>
+        </select>
+        <button type="submit" class="btn">Suchen</button>
+        <button type="button" class="btn accent" id="search-reset">Zurücksetzen</button>
+      </form>
+
+      <div id="products-msg"></div>
+
       <div class="product-grid" id="product-grid">
-        <p>Produkte folgen in Etappe 2 …</p>
+        <p>Produkte werden geladen …</p>
       </div>
     </section>
   </main>

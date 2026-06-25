@@ -26,9 +26,13 @@ async function apiFetch(url, { method = 'GET', body, auth = true } = {}) {
   const headers = {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';
 
+  let tokenSent = false;
   if (auth) {
     const token = getToken(); // aus auth.js
-    if (token) headers['Authorization'] = 'Bearer ' + token;
+    if (token) {
+      headers['Authorization'] = 'Bearer ' + token;
+      tokenSent = true;
+    }
   }
 
   let res;
@@ -54,6 +58,18 @@ async function apiFetch(url, { method = 'GET', body, auth = true } = {}) {
   }
 
   if (!res.ok) {
+    // Abgelaufene/ungültige Session: Wir haben einen Token mitgeschickt, der Server lehnt
+    // ihn aber ab (401). Dann sauber ausloggen und zum Login schicken — statt dem User eine
+    // technische Fehlermeldung auf einer halb geladenen Seite zu zeigen.
+    // (401 ohne Token, z. B. falsches Passwort beim Login, bleibt beim Aufrufer.)
+    if (res.status === 401 && tokenSent) {
+      clearToken();
+      if (!location.pathname.endsWith('login.html')) {
+        location.href = 'login.html?session=expired';
+        // Promise hängen lassen, die Seite wird ohnehin neu geladen.
+        return new Promise(() => {});
+      }
+    }
     const message = (data && data.error) || `Fehler ${res.status}`;
     const err = new Error(message);
     err.status = res.status;
