@@ -17,14 +17,10 @@ webshop-projekt/
 ├── frontend/                # Die Benutzeroberflächen (Vanilla JS, HTML, CSS)
 │   │
 │   ├── admin-portal/        # Exklusive Oberfläche für Administratoren
-│   │   ├── Dockerfile       # Baut den Admin-Frontend-Container
-│   │   ├── src/             # HTML, CSS und JS für Produkt- und Userverwaltung
-│   │   └── public/          # Statische Assets (Bilder, Icons)
+│   │   └── public/          # nginx-Webroot: HTML/CSS/JS (Produkt- & Userverwaltung)
 │   │
 │   └── user-portal/         # Oberfläche für den normalen Endanwender
-│       ├── Dockerfile       # Baut den User-Frontend-Container
-│       ├── src/             # HTML, CSS und JS für Shop, Warenkorb und Wunschlisten
-│       └── public/          # Statische Assets (Bilder, Icons)
+│       └── public/          # nginx-Webroot: HTML/CSS/JS (Shop, Warenkorb, Wunschlisten)
 │
 └── backend/                 # Die 5 Node.js Webservices
     │
