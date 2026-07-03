@@ -66,12 +66,14 @@ function renderOrders(orders) {
         <span class="order-status">${escapeHtml(order.status)}</span>
         <span class="order-date">${formatDate(order.date)}</span>
       </div>
-      <table class="order-table">
-        <thead>
-          <tr><th>Produkt</th><th class="num">Menge</th><th class="num">Einzelpreis</th><th class="num">Summe</th></tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+      <div class="table-scroll">
+        <table class="order-table">
+          <thead>
+            <tr><th>Produkt</th><th class="num">Menge</th><th class="num">Einzelpreis</th><th class="num">Summe</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
       <div class="order-total">Gesamt: ${formatPrice(order.total)}</div>
     `;
     container.appendChild(card);

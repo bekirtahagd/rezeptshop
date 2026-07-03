@@ -54,12 +54,14 @@ function renderTable(products) {
     .join('');
 
   tableContainer.innerHTML = `
-    <table class="data-table">
-      <thead>
-        <tr><th class="num">ID</th><th>Name</th><th>Kategorie</th><th class="num">Preis</th><th class="num">Bestand</th><th>Aktionen</th></tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th class="num">ID</th><th>Name</th><th>Kategorie</th><th class="num">Preis</th><th class="num">Bestand</th><th>Aktionen</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
   `;
 
   // Bearbeiten -> Formular befüllen
