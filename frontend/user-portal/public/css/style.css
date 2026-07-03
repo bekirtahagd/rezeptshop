@@ -46,6 +46,7 @@ header h1 a {
 nav {
   display: flex;
   align-items: center;
+  flex-wrap: wrap; /* Links dürfen auf schmalen Bildschirmen umbrechen */
 }
 
 nav a {
@@ -112,14 +113,22 @@ footer {
   main {
     margin: 1.5rem auto;
   }
-  .product-grid {
-    grid-template-columns: 1fr;
+
+  /* Warenkorb: aus einer engen 4-Spalten-Zeile eine 2x2-Anordnung machen */
+  .cart-item {
+    grid-template-columns: 1fr auto;
+  }
+
+  .cart-subtotal {
+    text-align: left;
   }
 }
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* Fluid: die Spaltenzahl richtet sich automatisch nach der Breite.
+     Widescreen -> mehrere Spalten, Hochformat/Handy -> weniger bis eine. */
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1.5rem;
   margin-top: 1.5rem;
 }
@@ -521,6 +530,12 @@ textarea:focus {
   color: var(--color-text-muted);
   font-size: 0.9rem;
   margin-left: auto;
+}
+
+/* Breite Tabellen dürfen auf schmalen Bildschirmen seitlich scrollen,
+   statt die ganze Seite zu sprengen. */
+.table-scroll {
+  overflow-x: auto;
 }
 
 .order-table {
