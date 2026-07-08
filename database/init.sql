@@ -117,3 +117,26 @@ CREATE TABLE permissions (
     permission     VARCHAR(10) NOT NULL CHECK (permission IN ('read', 'write', 'owner')),
     UNIQUE (user_id, resource_type, resource_id)
 );
+
+-- ─────────────────────────────────────────────────────────────
+-- BOOTSTRAP-ADMIN (läuft IMMER, unabhängig vom dev-Profil)
+-- ─────────────────────────────────────────────────────────────
+-- Ohne diesen Eintrag wäre die users-Tabelle nach einem produktiven
+-- `docker compose up` (ohne --profile dev) leer: Registrierung vergibt nur
+-- role='user', und POST /api/users/admin (USER-3) setzt selbst Admin-Rechte
+-- voraus → niemand käme je ins Admin-Portal (Henne-Ei-Problem).
+--
+--   Login:     admin@rezeptshop.de
+--   Passwort:  Admin1234!
+--   Hash:      bcryptjs (wie im auth-service), erzeugt für "Admin1234!"
+--
+-- SICHERHEITSHINWEIS: Vor echtem Produktivbetrieb Passwort ändern.
+-- Neuen Hash erzeugen (aus backend/auth-service/):
+--   node -e "console.log(require('bcryptjs').hashSync('DEIN_PASSWORT',10))"
+--
+-- Hinweis: Im dev-Profil überschreibt dummy-daten.sql die users-Tabelle
+-- (TRUNCATE) und legt einen eigenen Dev-Admin (admin@test.de) an — dort
+-- wird dieser Bootstrap-Admin also durch die Testdaten ersetzt.
+INSERT INTO users (email, password, role, locked, email_verified) VALUES
+  ('admin@rezeptshop.de', '$2b$10$WzC71Zl/V15iQrQFXPMZ/uXt5prNZ1lP1eroNIqNT668UsoxKr6Zu', 'admin', false, true)
+ON CONFLICT (email) DO NOTHING;

@@ -107,8 +107,12 @@ services:
     environment:
       PORT: 3002
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-    ports:
-      - "3002:3002"
+    # BEWUSST KEIN ports-Mapping: Der authorization-service ist ein rein interner Dienst.
+    # Er prüft selbst keine JWTs und vertraut den ihm übergebenen Feldern (userId/role/
+    # requesterRole). Würde Port 3002 am Host veröffentlicht, könnte jeder direkt
+    # POST /api/authorization/grant mit role:"admin" aufrufen und sich Rechte erschleichen.
+    # Die anderen Services erreichen ihn weiterhin über das Docker-Netz (http://authorization-service:3002);
+    # die Frontends sprechen ihn nie direkt an. Er bleibt daher ohne Host-Freigabe.
     depends_on:
       postgres:
         condition: service_healthy

@@ -19,6 +19,14 @@ Anstatt unsere gesamte Anwendung in einem einzigen, riesigen Code-Block (einem s
 * **Technologie:** Node.js in Kombination mit dem Web-Framework Express.
 * **Aufbau:** 5 unabhängige Webservices. Jeder Service läuft in seinem eigenen Ordner, hat einen eigenen Port und verwaltet seine eigenen Abhängigkeiten (`package.json`).
 
+### Zugriffsmodell (bewusste Entscheidung)
+Der Rezeptshop ist **vollständig anmeldepflichtig** — es gibt **keinen anonymen Zugriff**. Die
+Anmeldeseite ist die einzige ohne Login erreichbare Seite; jede andere Frontend-Seite prüft den
+Login und leitet ohne Token zurück zur Anmeldung. Passend dazu verlangen **alle** Backend-Endpunkte
+ein gültiges JWT, auch das Lesen von Produkten. Die Regel „jeder darf Produkte lesen" meint daher
+**jeden eingeloggten User** (Abgrenzung Leserecht ↔ Admin-Schreibrecht), nicht die anonyme
+Öffentlichkeit. Das ist so gewollt und wird nicht geändert.
+
 ### 3. Infrastruktur & Betrieb
 * **Versionskontrolle:** GitHub (Wir arbeiten streng nach dem Feature-Branch-Prinzip).
 * **Containerisierung:** **Docker**. Jeder Service und jedes Frontend wird am Ende in einen eigenen, isolierten Container (einen Mini-Computer) verpackt.

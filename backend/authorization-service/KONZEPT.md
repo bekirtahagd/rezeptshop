@@ -26,17 +26,37 @@ von einem internen Service kommt, der das JWT bereits geprüft hat.
 
 ## Hardcodierte Grundregeln
 
+> **Vorgelagert:** Dieser Service wird erst aufgerufen, **nachdem** der fachliche Service das
+> JWT beim auth-service validiert hat. „user" bzw. „read = ja" heißt daher immer **eingeloggter**
+> User — es gibt keinen anonymen Zugriff (die gesamte Anwendung ist anmeldepflichtig, bewusste
+> Entscheidung). Die Regeln unterscheiden also Leserecht (jeder angemeldete User) von Schreibrecht
+> (nur Admin), nicht angemeldet vs. anonym.
+
 | Rolle | Ressourcentyp | Aktion | Erlaubt? |
 |---|---|---|---|
 | admin | alle | alle | immer ja |
-| user | product | read | ja |
-| user | product | write, delete | nein |
-| user | user | read, write | nur das eigene Profil (userId === resourceId) |
-| user | user | delete | nein |
-| user | wishlist | alle | ja, wenn userId === ownerId (eigene Wishlist) |
-| user | wishlist | alle | DB-Lookup in `permissions`-Tabelle wenn nicht Besitzer |
+| user | product | read | ja (jeder eingeloggte User) |
+| user | product | write, delete | nicht per Baseline → **DB-Lookup** (Custom Permission write/owner) |
+| user | user | read, write (eigenes Profil) | ja, wenn userId === resourceId |
+| user | user | read/write (fremdes Profil), delete | nicht per Baseline → **DB-Lookup** (Custom Permission) |
+| user | wishlist | alle (eigene) | ja, wenn userId === ownerId |
+| user | wishlist | alle (fremde) | nicht per Baseline → **DB-Lookup** (Custom Permission) |
 
 Diese Regeln stehen als Code in `src/config/rules.js` — kein DB-Eintrag nötig.
+
+> **Wichtig (Verhaltensänderung):** `isAllowed()` verbietet für `product`/`user` nicht mehr
+> hart, wenn die Baseline kein Recht gibt, sondern gibt `null` zurück → der Route-Handler
+> prüft dann eine ggf. vergebene Custom Permission in der `permissions`-Tabelle. Früher wurde
+> hier hart `false` zurückgegeben, wodurch `permissions`-Einträge für `product`/`user`
+> **wirkungslos** waren (nur `wishlist` fiel je in den DB-Lookup). Das Standardverhalten bleibt
+> identisch (kein Eintrag → weiterhin verboten, nur Admin darf), aber Custom Permissions greifen
+> jetzt für **alle** Ressourcentypen — passend zur „für alle Ressourcentypen"-Aussage unten.
+>
+> **Action→Stufe-Mapping (fail-safe):** Beim DB-Lookup entscheidet `meetsPermissionLevel()`, ob
+> die gespeicherte Stufe reicht: `read`→read, `write`/`create`→write, `delete`/`lock`/`unlock`→owner.
+> Eine **unbekannte** Aktion verlangt die höchste Stufe (owner) — lieber fälschlich verbieten als
+> fälschlich erlauben. (Vorher verlangte eine unbekannte Aktion nur `read`, wodurch ein reines
+> `read`-Recht z. B. für `delete` gereicht hätte.)
 
 ---
 
@@ -62,7 +82,10 @@ Prüft ob ein User eine Aktion ausführen darf.
 
 **Ablauf:**
 1. Hardcodierte Regeln prüfen → `true` (direkt erlaubt) oder `false` (direkt verboten)
-2. Wenn `null` → Custom Permission aus `permissions`-Tabelle lesen
+2. Wenn `null` → Custom Permission aus `permissions`-Tabelle lesen. `resource_id` ist eine
+   INT-Spalte: nicht-numerische Platzhalter-IDs (z. B. `'new'` beim Anlegen eines Produkts/
+   Admins) können keine Permission haben und werden direkt als `{ allowed: false }` abgelehnt,
+   statt mit einem ungültigen Wert die DB abzufragen.
 
 **Request-Body:**
 ```json
@@ -156,9 +179,14 @@ im Body schicken und sich als jemand anderes ausgeben.
 **Antwort:** Das Docker-Netzwerk übernimmt diese Vertrauensebene.
 
 Der `authorization-service` ist von außen **nicht erreichbar** — er lauscht nur im internen
-Docker-Netzwerk. Jeder Service, der ihn aufruft, hat davor bereits beim `auth-service`
-das JWT validiert und die echte `userId` + `role` extrahiert. Wir vertrauen den internen
-Services, weil sie selbst die Authentifizierung bereits durchgeführt haben.
+Docker-Netzwerk. **Wichtig:** In der `docker-compose.yml` hat dieser Service bewusst **kein
+`ports:`-Mapping** (im Gegensatz zu auth/inventory/wishlist/user, die die Frontends direkt
+brauchen). Würde Port 3002 am Host veröffentlicht, könnte jeder ungeprüft
+`POST /api/authorization/grant` mit `requesterRole: "admin"` aufrufen und sich selbst Rechte
+erschleichen — denn dieser Service prüft ja bewusst keine JWTs. Jeder Service, der ihn aufruft,
+hat davor bereits beim `auth-service` das JWT validiert und die echte `userId` + `role`
+extrahiert. Wir vertrauen den internen Services, weil sie selbst die Authentifizierung bereits
+durchgeführt haben.
 
 Für ein Produktionssystem würde man zusätzlich Service-to-Service-Authentifizierung
 einbauen. Für dieses Projekt ist das Docker-Netzwerk als Vertrauensebene ausreichend

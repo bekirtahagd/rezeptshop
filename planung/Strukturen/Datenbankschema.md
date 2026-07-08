@@ -47,6 +47,8 @@ Das vollständige Diagramm liegt als `ERM.mmd` im selben Ordner.
 **Benutzt von:**
 - `auth-service` — erstellt Token beim Registrieren (AUTH-2) und bei Magic-Link-Anfragen (AUTH-5); markiert Token als `used` wenn der Link geklickt wird
 
+**Aufräumen:** Der `auth-service` besitzt einen periodischen Cleanup-Job (`src/config/cleanup.js`, alle 6 h + einmal beim Start), der abgelaufene Zeilen löscht (`DELETE ... WHERE expires_at < NOW()`). Da jeder Token eine feste Ablaufzeit hat (24 h bzw. 15 min), bleibt die Tabelle dauerhaft klein. Dasselbe gilt für `token_blacklist` (abgelaufene `jti` scheitern ohnehin schon an `jwt.verify` und werden daher gefahrlos entfernt).
+
 **Was ist der Unterschied zu JWTs?**
 JWTs werden **nicht** in der Datenbank gespeichert. Nach dem Login bekommt der Browser einen JWT und speichert ihn selbst (z.B. im `localStorage`). Bei jedem Request schickt der Browser den JWT im Header mit — der Server prüft nur die Signatur, ohne die DB zu fragen. `verification_tokens` hingegen sind kurzlebige Tokens für Mail-Links, die nur einmal gültig sind und deshalb in der DB verwaltet werden müssen.
 
@@ -197,6 +199,11 @@ Die hardcodierten Grundregeln (Admins dürfen alles, User dürfen nur eigene Res
 **Benutzt von:**
 - `wishlist-service` — schreibt einen neuen Eintrag wenn der Besitzer jemanden berechtigt (WUN-4)
 - `authorization-service` — liest diese Tabelle bei jeder Ressourcen-Anfrage, um Custom-Permissions zu prüfen (AUTO-1)
+
+> **Hinweis:** Custom Permissions greifen tatsächlich für **alle drei** Ressourcentypen. Die
+> hardcodierte Regel für `product`/`user` verbietet nicht mehr hart, sondern lässt den
+> `authorization-service` bei fehlendem Baseline-Recht in diese Tabelle schauen. Zuvor wurde nur
+> für `wishlist` nachgeschlagen — Einträge mit `resource_type` `product`/`user` waren wirkungslos.
 
 ---
 
