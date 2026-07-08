@@ -77,8 +77,11 @@ Produkte fragt der Service `authorization-service POST /check` mit
 `allowed: true` (hardcodierte Regel im authorization-service) → sonst **`403`**.
 
 **Warum nicht bei jedem Endpunkt ein /check?**
-- **Produkte lesen** (INV-1/2): Die Regel im authorization-service ist „jeder darf lesen" →
-  ein /check würde immer `true` liefern. Die Authentifizierung (Stufe 1) reicht hier.
+- **Produkte lesen** (INV-1/2): Die Regel im authorization-service ist „jeder eingeloggte User
+  darf lesen" → ein /check würde immer `true` liefern. Die Authentifizierung (Stufe 1) reicht hier.
+  Wichtig: **Lesen ist nicht anonym** — auch die GET-Produktendpunkte verlangen ein gültiges JWT
+  (`router.use(authenticate)`). Die gesamte Anwendung ist anmeldepflichtig (bewusste Entscheidung);
+  „jeder darf lesen" meint jeden angemeldeten User, nicht die anonyme Öffentlichkeit.
 - **Warenkorb & Bestellungen** (INV-6/7): Diese sind **inhärent** an `req.user.userId`
   gebunden — alle Queries filtern auf den eingeloggten User. Ein Cross-User-Zugriff ist gar
   nicht möglich, also ist kein zusätzlicher /check nötig.

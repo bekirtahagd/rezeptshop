@@ -26,10 +26,16 @@ von einem internen Service kommt, der das JWT bereits geprüft hat.
 
 ## Hardcodierte Grundregeln
 
+> **Vorgelagert:** Dieser Service wird erst aufgerufen, **nachdem** der fachliche Service das
+> JWT beim auth-service validiert hat. „user" bzw. „read = ja" heißt daher immer **eingeloggter**
+> User — es gibt keinen anonymen Zugriff (die gesamte Anwendung ist anmeldepflichtig, bewusste
+> Entscheidung). Die Regeln unterscheiden also Leserecht (jeder angemeldete User) von Schreibrecht
+> (nur Admin), nicht angemeldet vs. anonym.
+
 | Rolle | Ressourcentyp | Aktion | Erlaubt? |
 |---|---|---|---|
 | admin | alle | alle | immer ja |
-| user | product | read | ja |
+| user | product | read | ja (jeder eingeloggte User) |
 | user | product | write, delete | nicht per Baseline → **DB-Lookup** (Custom Permission write/owner) |
 | user | user | read, write (eigenes Profil) | ja, wenn userId === resourceId |
 | user | user | read/write (fremdes Profil), delete | nicht per Baseline → **DB-Lookup** (Custom Permission) |
