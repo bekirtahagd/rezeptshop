@@ -264,3 +264,15 @@ Nach jedem Endpunkt: in **Bruno** testen, dann der nächste (euer üblicher Work
 „empfindliche" Aktionen (insbesondere **Käufe**) verlangen `email_verified = true`. Das ist
 nutzerfreundlich und trotzdem sicher. Wird in **Schritt 4** (`login`) bzw. beim Kauf-Endpunkt
 des inventory-service wirksam.
+
+---
+
+## Nachträgliche Härtung (Session 12) — Token-Cleanup
+
+`token_blacklist` und `verification_tokens` wuchsen unbegrenzt (jeder Logout und jede Magic-
+Link-/Registrierungs-Anfrage legt Zeilen an, nichts wurde je gelöscht). Neu: `src/config/cleanup.js`
+mit `startTokenCleanup()`, in `src/index.js` beim Serverstart aufgerufen. Der Job löscht einmal
+beim Start und danach alle 6 h (`CLEANUP_INTERVAL_MS` überschreibbar) alle abgelaufenen Zeilen
+aus beiden Tabellen (`DELETE ... WHERE expires_at < NOW()`). Abgelaufene `jti` sind wertlos
+(ein abgelaufenes JWT scheitert ohnehin an `jwt.verify`), abgelaufene Einmal-Token ebenfalls —
+so bleiben beide Tabellen dauerhaft klein, ohne externen Cron-Job.

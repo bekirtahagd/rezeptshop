@@ -25,8 +25,14 @@ router.post('/check', async (req, res) => {
   if (hardcoded === true)  return res.json({ allowed: true });
   if (hardcoded === false) return res.json({ allowed: false });
 
-  // Schritt 2: null → DB-Lookup in permissions-Tabelle
-  // Wird nur erreicht wenn resourceType 'wishlist' und User nicht der Besitzer ist
+  // Schritt 2: null → Custom Permission aus der permissions-Tabelle prüfen.
+  // resource_id ist eine INT-Spalte. Platzhalter-IDs ohne Bezug auf eine echte Zeile
+  // (z.B. 'new' beim Anlegen eines Produkts/Admins) können nie eine Permission haben —
+  // wir lehnen sie direkt ab, statt mit einem nicht-numerischen Wert die DB abzufragen.
+  if (!/^\d+$/.test(String(resourceId))) {
+    return res.json({ allowed: false });
+  }
+
   try {
     const result = await db.query(
       'SELECT permission FROM permissions WHERE user_id = $1 AND resource_type = $2 AND resource_id = $3',

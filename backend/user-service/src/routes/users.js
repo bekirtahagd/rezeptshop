@@ -5,6 +5,11 @@ const db = require('../config/db');
 const authenticate = require('../middleware/authenticate');
 const { checkPermission, ServiceUnavailableError } = require('../config/services');
 
+// Gleiche Format-Prüfung wie im auth-service (/register), damit Admin-Accounts denselben
+// Mindeststandard erfüllen. Bewusst als Kopie: die Services teilen keinen Code, nur die DB.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_PASSWORD_LENGTH = 8;
+
 // Alle User-Endpunkte verlangen ein gültiges JWT (Grundregel).
 router.use(authenticate);
 
@@ -109,6 +114,12 @@ router.post('/admin', async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({ error: 'email und password sind erforderlich' });
+    }
+    if (!EMAIL_REGEX.test(email)) {
+      return res.status(400).json({ error: 'Ungültiges E-Mail-Format' });
+    }
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ error: `Passwort muss mindestens ${MIN_PASSWORD_LENGTH} Zeichen lang sein` });
     }
 
     const exists = await db.query('SELECT 1 FROM users WHERE email = $1', [email]);

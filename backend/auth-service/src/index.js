@@ -4,6 +4,7 @@ require('dotenv').config({ path: require('path').resolve(__dirname, '../../..', 
 
 const express = require('express');
 const cors = require('cors');
+const { startTokenCleanup } = require('./config/cleanup');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -29,4 +30,7 @@ app.use('/api/auth', require('./routes/auth'));
 
 app.listen(PORT, () => {
   console.log(`Auth-Service läuft auf Port ${PORT}`);
+  // Periodisches Aufräumen abgelaufener Token (token_blacklist + verification_tokens),
+  // damit diese Tabellen nicht unbegrenzt wachsen.
+  startTokenCleanup();
 });
