@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rezeptshop – Onboarding fürs Team</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --ink:#1f2430; --muted:#5c6472;
+    --line:#e3e7ee; --accent:#2f7d5b; --accent-soft:#e3f2ea;
+    --blue:#2563eb; --green:#16a34a; --orange:#d97706; --red:#dc2626;
+    --purple:#7c3aed; --shadow:0 1px 3px rgba(20,30,50,.08),0 6px 18px rgba(20,30,50,.05);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6; font-size:16px;
+  }
+  a{color:var(--accent)}
+  code,kbd{font-family:ui-monospace,"Cascadia Code","Consolas",monospace;font-size:.88em}
+  code{background:#eef1f6;padding:.1em .4em;border-radius:5px;color:#334}
+  kbd{background:#2b3040;color:#fff;padding:.12em .5em;border-radius:5px}
+  .layout{display:flex;min-height:100vh;align-items:flex-start}
+
+  /* ── Sidebar ── */
+  .sidebar{
+    width:250px;flex:0 0 250px;position:sticky;top:0;height:100vh;overflow-y:auto;
+    background:#fff;border-right:1px solid var(--line);padding:20px 14px;
+  }
+  .brand{font-weight:800;font-size:1.15rem;display:flex;align-items:center;gap:8px;margin:0 0 4px 6px}
+  .brand .logo{width:28px;height:28px;border-radius:8px;background:var(--accent);color:#fff;
+    display:grid;place-items:center;font-size:1rem}
+  .brand-sub{font-size:.72rem;color:var(--muted);margin:0 0 16px 6px;text-transform:uppercase;letter-spacing:.5px}
+  .nav a{
+    display:flex;gap:9px;align-items:center;text-decoration:none;color:var(--ink);
+    padding:8px 10px;border-radius:8px;font-size:.9rem;margin-bottom:2px;
+  }
+  .nav a:hover{background:#f0f3f7}
+  .nav a.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .nav .n{font-size:.72rem;width:20px;height:20px;border-radius:6px;background:#eef1f6;
+    display:grid;place-items:center;color:var(--muted);flex:0 0 20px}
+  .nav a.active .n{background:var(--accent);color:#fff}
+
+  /* ── Content ── */
+  .content{flex:1;min-width:0;padding:0 clamp(16px,4vw,54px) 80px;max-width:1000px}
+  header.hero{padding:54px 0 24px}
+  header.hero h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:.2em 0;line-height:1.15}
+  header.hero p.lead{font-size:1.12rem;color:var(--muted);max-width:60ch}
+  .pill{display:inline-block;background:var(--accent-soft);color:var(--accent);
+    font-size:.75rem;font-weight:700;padding:4px 11px;border-radius:20px;letter-spacing:.3px}
+
+  section{padding:34px 0;border-top:1px solid var(--line)}
+  section h2{font-size:1.5rem;margin:.1em 0 .5em;display:flex;align-items:center;gap:10px}
+  section h2 .chip{font-size:.7rem;background:var(--ink);color:#fff;border-radius:6px;padding:2px 8px;font-weight:700}
+  h3{font-size:1.12rem;margin:1.3em 0 .4em}
+  p{margin:.5em 0}
+  .muted{color:var(--muted)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;box-shadow:var(--shadow);margin:14px 0}
+  .grid{display:grid;gap:14px}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+
+  .callout{border-left:4px solid var(--accent);background:#f0f7f3;padding:12px 16px;
+    border-radius:0 10px 10px 0;margin:14px 0}
+  .callout.warn{border-color:var(--orange);background:#fdf6ec}
+  .callout.info{border-color:var(--blue);background:#eef4fe}
+  .callout.tip{border-color:var(--purple);background:#f4effe}
+  .callout b{display:block;margin-bottom:2px}
+
+  .cmd{background:#1b2030;color:#e8ecf5;border-radius:10px;padding:14px 16px;
+    font-family:ui-monospace,monospace;font-size:.86rem;overflow-x:auto;margin:12px 0}
+  .cmd .c{color:#7fd7a6}
+
+  /* ── Term tooltip / glossary ── */
+  .term{border-bottom:1.5px dotted var(--accent);cursor:help;font-weight:600;color:var(--accent)}
+
+  /* ── Architecture diagram ── */
+  .arch-wrap{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:start}
+  @media(max-width:820px){.arch-wrap{grid-template-columns:1fr}}
+  .arch-grid{display:flex;flex-direction:column;gap:14px}
+  .arch-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  .arch-lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);
+    text-align:center;font-weight:700;margin-top:6px}
+  .box{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:9px 12px;
+    cursor:pointer;text-align:center;min-width:120px;transition:.12s;position:relative}
+  .box:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+  .box.active{border-color:var(--accent);background:var(--accent-soft)}
+  .box .bt{font-weight:700;font-size:.86rem;display:block}
+  .box .bp{font-size:.72rem;color:var(--muted);font-family:ui-monospace,monospace}
+  .box.svc{border-color:#cfe0d7;background:#f4faf7}
+  .box.data{border-color:#d5ddf3;background:#f2f5fd}
+  .box.dev{border-style:dashed}
+  .box.frontend{border-color:#f0dcc4;background:#fdf7ef}
+  .arch-flow{font-size:.78rem;color:var(--muted);text-align:center;margin:2px 0}
+  .arch-flow::before{content:"↓ ";color:var(--accent)}
+  .detail-panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;
+    box-shadow:var(--shadow);position:sticky;top:16px}
+  .detail-panel h4{margin:.1em 0 .3em;font-size:1.05rem}
+  .detail-panel .tag{display:inline-block;font-size:.7rem;font-weight:700;border-radius:6px;
+    padding:2px 8px;margin-right:5px}
+  .tag.dev{background:#fdf1df;color:#a15c00}
+  .tag.noport{background:#fde8e8;color:#b42318}
+  .tag.port{background:#e3f2ea;color:#1a7048}
+
+  /* ── Accordion cards (lexicon / services) ── */
+  .acc{border:1px solid var(--line);border-radius:12px;background:#fff;margin:10px 0;overflow:hidden}
+  .acc>button{width:100%;text-align:left;background:none;border:0;padding:15px 18px;cursor:pointer;
+    font-size:1rem;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--ink)}
+  .acc>button:hover{background:#f7f9fb}
+  .acc>button .ic{font-size:1.1rem;flex:0 0 auto}
+  .acc>button .arw{transition:.2s;color:var(--muted);font-size:.8rem}
+  .acc.open>button .arw{transform:rotate(90deg)}
+  .acc .body{padding:0 18px;max-height:0;overflow:hidden;transition:max-height .25s ease}
+  .acc.open .body{max-height:1400px;padding:0 18px 16px}
+  .acc .body dl{margin:0}
+  .acc .body dt{font-weight:700;color:var(--accent);margin-top:10px;font-size:.9rem}
+  .acc .body dd{margin:2px 0 0}
+
+  /* ── Flow player ── */
+  .flow-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .flow-tabs button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 15px;
+    cursor:pointer;font-size:.85rem;font-weight:600;color:var(--muted)}
+  .flow-tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .flow-stage{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0}
+  .fnode{border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.8rem;
+    font-weight:600;color:var(--muted);background:#fff;transition:.15s;text-align:center}
+  .fnode.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);
+    transform:scale(1.05);box-shadow:var(--shadow)}
+  .fnode.done{border-color:#cfe0d7;color:var(--ink)}
+  .flow-step{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-height:96px}
+  .flow-step .stepno{font-size:.75rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px}
+  .flow-step h4{margin:.2em 0 .3em;font-size:1.02rem}
+  .flow-ctrl{display:flex;gap:10px;align-items:center;margin-top:12px}
+  .flow-ctrl button{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:8px;
+    padding:8px 16px;cursor:pointer;font-weight:600;font-size:.88rem}
+  .flow-ctrl button.ghost{background:#fff;color:var(--accent)}
+  .flow-ctrl button:disabled{opacity:.4;cursor:not-allowed}
+  .flow-ctrl .pos{font-size:.82rem;color:var(--muted);margin-left:auto}
+
+  /* ── Tables ── */
+  .tbl-wrap{overflow-x:auto;margin:12px 0}
+  table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:460px}
+  th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line)}
+  th{background:#f2f4f8;font-size:.78rem;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+  tbody tr:hover{background:#f9fafc}
+
+  /* ── DB cards ── */
+  .db-card{border:1px solid var(--line);border-radius:11px;background:#fff;padding:13px 15px}
+  .db-card h4{margin:0 0 4px;font-size:.95rem;font-family:ui-monospace,monospace;color:var(--accent)}
+  .db-card .cols{font-size:.78rem;color:var(--muted);font-family:ui-monospace,monospace}
+  .db-card p{font-size:.85rem;margin:6px 0 0}
+
+  /* ── API reference ── */
+  .api-filter{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+  .api-filter button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 13px;
+    cursor:pointer;font-size:.82rem;font-weight:600;color:var(--muted)}
+  .api-filter button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .ep{border:1px solid var(--line);border-radius:9px;background:#fff;margin:7px 0;overflow:hidden}
+  .ep>button{width:100%;border:0;background:none;cursor:pointer;padding:10px 13px;display:flex;
+    align-items:center;gap:10px;text-align:left;font-size:.86rem}
+  .ep>button:hover{background:#f7f9fb}
+  .method{font-family:ui-monospace,monospace;font-weight:800;font-size:.72rem;padding:3px 8px;
+    border-radius:6px;flex:0 0 auto;min-width:52px;text-align:center;color:#fff}
+  .m-GET{background:var(--green)} .m-POST{background:var(--blue)}
+  .m-PUT{background:var(--orange)} .m-DELETE{background:var(--red)}
+  .ep .path{font-family:ui-monospace,monospace;font-weight:600}
+  .ep .desc{color:var(--muted);font-size:.8rem;margin-left:auto;text-align:right}
+  .ep .badges{flex:0 0 auto;letter-spacing:1px}
+  .ep .ep-body{display:none;padding:0 14px 14px;font-size:.85rem;border-top:1px solid var(--line)}
+  .ep.open .ep-body{display:block}
+  .ep .ep-body pre{background:#1b2030;color:#e8ecf5;border-radius:8px;padding:11px 13px;overflow-x:auto;
+    font-size:.8rem;margin:8px 0}
+  .svc-head{font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.5px;margin:20px 0 4px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin:6px 0 4px}
+
+  /* ── Quiz ── */
+  .quiz-q{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0}
+  .quiz-q .qnum{font-size:.75rem;font-weight:700;color:var(--accent);text-transform:uppercase}
+  .quiz-q h4{margin:.3em 0 .6em;font-size:1rem}
+  .quiz-q .opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;
+    border-radius:9px;padding:10px 13px;margin:6px 0;cursor:pointer;font-size:.9rem;transition:.12s}
+  .quiz-q .opt:hover{border-color:var(--accent)}
+  .quiz-q .opt.correct{background:#eaf7ef;border-color:var(--green);color:#146c3a}
+  .quiz-q .opt.wrong{background:#fdecec;border-color:var(--red);color:#a71d1d}
+  .quiz-q .opt.disabled{cursor:default;opacity:.75}
+  .quiz-fb{margin-top:8px;font-size:.86rem;padding:9px 12px;border-radius:8px;display:none}
+  .quiz-fb.show{display:block}
+  .quiz-fb.ok{background:#eaf7ef;color:#146c3a}
+  .quiz-fb.no{background:#fdecec;color:#a71d1d}
+  .quiz-score{font-weight:700;font-size:1.05rem;margin-top:10px}
+
+  /* ── Stolperfallen ── */
+  .trap{display:flex;gap:11px;align-items:flex-start;background:#fff;border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px;margin:8px 0}
+  .trap .tn{flex:0 0 auto;width:26px;height:26px;border-radius:7px;background:#fdf1df;color:#a15c00;
+    display:grid;place-items:center;font-weight:800;font-size:.85rem}
+
+  /* ── mobile top bar ── */
+  .topbar{display:none}
+  @media(max-width:780px){
+    .layout{flex-direction:column}
+    .sidebar{position:static;width:100%;height:auto;flex:none;border-right:0;border-bottom:1px solid var(--line);
+      display:none;padding:10px}
+    .sidebar.show{display:block}
+    .topbar{display:flex;position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);
+      padding:11px 16px;align-items:center;gap:12px;justify-content:space-between}
+    .topbar b{font-size:1rem}
+    .topbar button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:600}
+    .content{padding:0 16px 60px}
+    header.hero{padding:28px 0 16px}
+    .detail-panel{position:static}
+  }
+  .footer{border-top:1px solid var(--line);margin-top:40px;padding-top:20px;color:var(--muted);font-size:.85rem}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <b>🥘 Rezeptshop</b>
+  <button id="menuBtn" aria-label="Menü">☰ Kapitel</button>
+</div>
+
+<div class="layout">
+  <!-- ─────────── SIDEBAR ─────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><span class="logo">🥘</span> Rezeptshop</div>
+    <div class="brand-sub">Team-Onboarding</div>
+    <nav class="nav" id="nav">
+      <a href="#s1"><span class="n">1</span> Überblick</a>
+      <a href="#s2"><span class="n">2</span> Architektur</a>
+      <a href="#s3"><span class="n">3</span> Technologie-Lexikon</a>
+      <a href="#s4"><span class="n">4</span> Request-Flow</a>
+      <a href="#s5"><span class="n">5</span> Die 5 Services</a>
+      <a href="#s6"><span class="n">6</span> Datenbank</a>
+      <a href="#s7"><span class="n">7</span> Frontends</a>
+      <a href="#s8"><span class="n">8</span> Loslegen</a>
+      <a href="#s9"><span class="n">9</span> API-Referenz</a>
+      <a href="#s10"><span class="n">10</span> Stolperfallen</a>
+      <a href="#s11"><span class="n">11</span> Selbsttest</a>
+    </nav>
+  </aside>
+
+  <!-- ─────────── CONTENT ─────────── -->
+  <main class="content">
+    <header class="hero">
+      <span class="pill">Web Engineering · Prüfungsleistung</span>
+      <h1>Willkommen im Rezeptshop-Team 👋</h1>
+      <p class="lead">Diese Seite bringt dich Schritt für Schritt in unser Projekt — vom großen
+      Bild bis zu jedem einzelnen API-Endpunkt. Jeder Fachbegriff wird erklärt, sobald er zum
+      ersten Mal auftaucht. Kein Vorwissen nötig. Nimm dir Zeit und klick dich durch.</p>
+    </header>
+
+    <!-- ═══════════ 1. ÜBERBLICK ═══════════ -->
+    <section id="s1">
+      <h2><span class="chip">01</span> Überblick</h2>
+      <p>Der <b>Rezeptshop</b> ist ein Web-Shop für Koch-/Rezeptprodukte, den wir zu fünft als
+      Prüfungsleistung im Modul <i>Web Engineering</i> bauen. Das Besondere: Er ist keine einzige
+      große Anwendung, sondern besteht aus mehreren kleinen, unabhängigen Programmen — einer
+      <span class="term" data-tip="Microservice = ein kleiner, eigenständiger Dienst mit genau einer Zuständigkeit. Statt einer riesigen Anwendung baut man viele kleine, die über das Netzwerk (HTTP) miteinander reden.">Microservice-Architektur</span>.</p>
+
+      <div class="grid three">
+        <div class="card"><b>5 Backend-Services</b><p class="muted" style="margin:4px 0 0;font-size:.88rem">Node.js + Express. Jeder kümmert sich um genau einen Bereich (Login, Produkte, Wunschlisten …).</p></div>
+        <div class="card"><b>2 Frontends</b><p class="muted" style="margin:4px 0 0;font-size:.88rem">Reines Vanilla-JS: ein Portal für Kunden, eines für Admins. Kein React/Vue.</p></div>
+        <div class="card"><b>1 Datenbank</b><p class="muted" style="margin:4px 0 0;font-size:.88rem">Eine gemeinsame PostgreSQL-DB, auf die alle Services zugreifen.</p></div>
+      </div>
+
+      <h3>Warum Microservices?</h3>
+      <p>Weil es die Prüfungsvorgabe ist — und weil man so übt, wie große Systeme in der Praxis
+      gebaut werden. Jedes Teammitglied kann an „seinem" Service arbeiten, ohne den anderen in
+      die Quere zu kommen. Der Preis dafür: Die Dienste müssen über das Netzwerk miteinander
+      reden, und man muss den Überblick behalten. Genau dabei hilft diese Seite.</p>
+
+      <div class="callout tip"><b>🚀 Das Wichtigste zuerst: Alles startet mit einem Befehl</b>
+      Wenn <span class="term" data-tip="Docker packt jeden Dienst in einen isolierten 'Container' – ein Mini-Betriebssystem, in dem der Dienst genau die Software findet, die er braucht. Docker Compose startet alle Container zusammen.">Docker</span> installiert ist, reicht im Ordner <code>rezeptshop/</code>:</div>
+      <div class="cmd"><span class="c"># Startet DB, alle 5 Services, beide Frontends + Testdaten</span><br>docker compose --profile dev up -d --build</div>
+      <p class="muted" style="font-size:.9rem">Danach ist der Kunden-Shop unter <a href="http://localhost:8080">localhost:8080</a> erreichbar. Details in Kapitel 8.</p>
+    </section>
+
+    <!-- ═══════════ 2. ARCHITEKTUR ═══════════ -->
+    <section id="s2">
+      <h2><span class="chip">02</span> Interaktives Architekturdiagramm</h2>
+      <p>Jede Box unten ist ein <b>Container</b> (ein laufendes Programm im Docker-Netzwerk
+      <code>rezeptshop-net</code>). <b>Klick eine Box an</b>, um rechts zu erfahren, was sie tut.
+      Boxen mit gestricheltem Rand laufen nur im <code>dev</code>-Profil.</p>
+
+      <div class="arch-wrap">
+        <div class="arch-grid" id="archGrid">
+          <div class="arch-lbl">Browser / Frontends</div>
+          <div class="arch-row">
+            <div class="box frontend" data-k="user-portal"><span class="bt">user-portal</span><span class="bp">nginx · :8080</span></div>
+            <div class="box frontend" data-k="admin-portal"><span class="bt">admin-portal</span><span class="bp">nginx · :8081</span></div>
+          </div>
+          <div class="arch-flow">HTTP-Aufrufe an die Backends (direkt, mit CORS)</div>
+          <div class="arch-lbl">Backend-Services</div>
+          <div class="arch-row">
+            <div class="box svc" data-k="auth-service"><span class="bt">auth-service</span><span class="bp">:3001</span></div>
+            <div class="box svc" data-k="inventory-service"><span class="bt">inventory-service</span><span class="bp">:3003</span></div>
+            <div class="box svc" data-k="wishlist-service"><span class="bt">wishlist-service</span><span class="bp">:3004</span></div>
+            <div class="box svc" data-k="user-service"><span class="bt">user-service</span><span class="bp">:3005</span></div>
+          </div>
+          <div class="arch-row">
+            <div class="box svc" data-k="authorization-service" style="min-width:180px"><span class="bt">authorization-service</span><span class="bp">kein Host-Port 🔒</span></div>
+          </div>
+          <div class="arch-flow">alle Services sprechen mit der Datenbank</div>
+          <div class="arch-lbl">Daten & Infrastruktur</div>
+          <div class="arch-row">
+            <div class="box data" data-k="postgres"><span class="bt">postgres</span><span class="bp">:5432</span></div>
+            <div class="box data dev" data-k="pgadmin"><span class="bt">pgadmin</span><span class="bp">dev · :5050</span></div>
+            <div class="box data dev" data-k="mailpit"><span class="bt">mailpit</span><span class="bp">dev · :8025/:1025</span></div>
+            <div class="box data dev" data-k="db-seed"><span class="bt">db-seed</span><span class="bp">dev · einmalig</span></div>
+          </div>
+        </div>
+        <div class="detail-panel" id="archDetail">
+          <h4>👈 Box anklicken</h4>
+          <p class="muted">Wähle links einen Container, um Details, Port und Aufgabe zu sehen.</p>
+        </div>
+      </div>
+
+      <div class="callout info" style="margin-top:18px"><b>Wie hängt alles zusammen?</b>
+      Die Frontends im Browser rufen die Backend-Services direkt auf. Jeder Service, der eine
+      Aktion absichern muss, fragt (1) den <b>auth-service</b> per <code>/validate</code>, ob das
+      Login-Token gültig ist, und (2) den <b>authorization-service</b> per <code>/check</code>, ob
+      der User die Aktion überhaupt darf. Alle Services lesen/schreiben in dieselbe
+      <b>postgres</b>-Datenbank. <b>auth</b> und <b>inventory</b> verschicken Mails über <b>mailpit</b>.</div>
+    </section>
+
+    <!-- ═══════════ 3. LEXIKON ═══════════ -->
+    <section id="s3">
+      <h2><span class="chip">03</span> Technologie-Lexikon</h2>
+      <p>Jede Technologie, die wir verwenden — aufklappbar erklärt. <b>Was ist das? Warum wir?
+      Wo im Projekt?</b> Klick eine Karte an.</p>
+      <div id="lexicon"></div>
+    </section>
+
+    <!-- ═══════════ 4. REQUEST-FLOW ═══════════ -->
+    <section id="s4">
+      <h2><span class="chip">04</span> Animierter Request-Flow</h2>
+      <p>Was passiert eigentlich zwischen „Klick" und „fertig"? Wähle einen Ablauf und klick dich
+      mit <b>Weiter</b> Schritt für Schritt durch. Die gerade aktive Komponente wird
+      hervorgehoben.</p>
+
+      <div class="flow-tabs" id="flowTabs"></div>
+      <div class="flow-stage" id="flowStage"></div>
+      <div class="flow-step" id="flowStep"></div>
+      <div class="flow-ctrl">
+        <button class="ghost" id="flowPrev">← Zurück</button>
+        <button id="flowNext">Weiter →</button>
+        <span class="pos" id="flowPos"></span>
+      </div>
+    </section>
+
+    <!-- ═══════════ 5. SERVICES ═══════════ -->
+    <section id="s5">
+      <h2><span class="chip">05</span> Die 5 Services im Detail</h2>
+      <p>Jeder Service ist ein eigenständiges Node.js-Programm mit eigenem Ordner unter
+      <code>backend/</code>. Klick zum Aufklappen.</p>
+      <div id="services"></div>
+    </section>
+
+    <!-- ═══════════ 6. DATENBANK ═══════════ -->
+    <section id="s6">
+      <h2><span class="chip">06</span> Datenbank</h2>
+      <p>Wir nutzen <b>eine</b> gemeinsame PostgreSQL-Datenbank mit <b>11 Tabellen</b>. Sie wird
+      beim ersten Start automatisch aus <code>database/init.sql</code> erzeugt.</p>
+      <div class="grid two" id="dbCards"></div>
+
+      <h3>Löschverhalten — was passiert bei „User löschen"?</h3>
+      <p>Fremdschlüssel (<span class="term" data-tip="Foreign Key = eine Spalte, die auf einen Datensatz in einer anderen Tabelle zeigt, z.B. cart.user_id zeigt auf users.user_id. Die DB sorgt dafür, dass die Verweise gültig bleiben.">Foreign Keys</span>)
+      regeln, was mit abhängigen Daten geschieht:</p>
+      <div class="grid two">
+        <div class="callout"><b>CASCADE (mitlöschen)</b>
+        Wird ein User gelöscht, verschwinden automatisch: sein <code>cart</code> (+ <code>cart_items</code>),
+        seine <code>verification_tokens</code>, seine eigenen <code>wishlists</code> und seine
+        <code>permissions</code>. Analog: Produkt löschen → aus allen Warenkörben & Wunschlisten entfernt.</div>
+        <div class="callout warn"><b>SET NULL (Historie behalten)</b>
+        <code>orders.user_id</code> wird auf <code>NULL</code> gesetzt — die <b>Bestellhistorie
+        bleibt</b> erhalten (wichtig fürs Geschäft). Ebenso beim Produkt löschen:
+        <code>orderpositions.product_id</code> → <code>NULL</code>, aber der gekaufte Posten bleibt sichtbar.</div>
+      </div>
+
+      <h3>Wichtige Constraints</h3>
+      <ul>
+        <li><code>carts.user_id UNIQUE</code> → jeder User hat <b>genau einen</b> Warenkorb.</li>
+        <li><code>permissions UNIQUE(user_id, resource_type, resource_id)</code> → pro Ressource nur eine Berechtigung je User (der <code>/grant</code>-Upsert überschreibt sie).</li>
+        <li><code>purchase_price</code> in <code>orderpositions</code> speichert den Preis <b>zum Kaufzeitpunkt</b> — spätere Preisänderungen verfälschen alte Rechnungen nicht.</li>
+      </ul>
+
+      <div class="callout tip"><b>💡 Merksatz: Zeitvergleiche IMMER in SQL</b>
+      Unsere <code>TIMESTAMP</code>-Spalten haben keine Zeitzone; die DB rechnet in UTC, Node läuft
+      evtl. in lokaler Zeit. Ein „ist der Token abgelaufen?"-Vergleich muss deshalb in SQL passieren
+      (<code>expires_at &lt; NOW()</code>), <b>nie</b> in JavaScript — sonst rechnet man um Stunden falsch.</div>
+    </section>
+
+    <!-- ═══════════ 7. FRONTENDS ═══════════ -->
+    <section id="s7">
+      <h2><span class="chip">07</span> Frontends</h2>
+      <p>Prüfungsvorgabe: <b>reines Vanilla JS/HTML/CSS</b>, kein Framework. Beide Portale sind
+      simple statische Webseiten, die per <code>fetch</code> mit den Backends reden.</p>
+
+      <div class="grid two">
+        <div class="card"><b>🛒 user-portal</b> <span class="muted">· :8080</span>
+          <p style="font-size:.88rem">Seiten: <code>index</code> (Produkte+Suche), <code>login</code>
+          (3 Tabs: Login / Registrieren / Magic-Link), <code>warenkorb</code>, <code>bestellungen</code>,
+          <code>wunschliste</code>, <code>magic</code> &amp; <code>confirm</code> (Landing-Pages
+          vor dem Login, lesen <code>?token=</code> aus der URL).</p></div>
+        <div class="card"><b>🛠️ admin-portal</b> <span class="muted">· :8081</span>
+          <p style="font-size:.88rem">Seiten: <code>index/dashboard</code>, <code>login</code>,
+          <code>produkte</code> (anlegen/bearbeiten/löschen), <code>benutzer</code>
+          (suchen/sperren/löschen). Zusätzlich <code>requireAdmin()</code>: prüft die Rolle
+          frisch über <code>/me</code>.</p></div>
+      </div>
+
+      <h3>Die zwei Helfer-Dateien</h3>
+      <div class="acc-static">
+        <div class="card">
+          <b><code>js/api.js</code> — spricht mit den Backends</b>
+          <p style="font-size:.9rem">Enthält eine <code>SERVICES</code>-Map mit den Basis-URLs:
+          auth <code>:3001</code>, inventory <code>:3003</code>, wishlist <code>:3004</code>, user
+          <code>:3005</code>. <b>Der authorization-service fehlt hier bewusst</b> — das Frontend
+          spricht ihn nie direkt an (er ist rein intern!). Die Funktion <code>apiFetch</code>
+          hängt automatisch den <code>Authorization: Bearer &lt;token&gt;</code>-Header an. Kommt
+          bei einem Aufruf mit Token ein <code>401</code> zurück, wird das Token gelöscht und der
+          User auf <code>login.html?session=expired</code> umgeleitet.</p>
+        </div>
+        <div class="card">
+          <b><code>js/auth.js</code> — verwaltet das Login</b>
+          <p style="font-size:.9rem">Speichert das Token im <span class="term" data-tip="localStorage = ein kleiner Speicher im Browser, der Daten auch nach dem Schließen des Tabs behält. Wir legen dort das Login-Token ab (Schlüssel 'token').">localStorage</span>
+          (Schlüssel <code>token</code>). Funktionen: <code>requireLogin()</code> (schützt Seiten),
+          <code>logout()</code>, <code>currentUser()</code> (holt &amp; cached <code>/me</code>).
+          Das admin-portal hat zusätzlich <code>requireAdmin()</code>.</p>
+        </div>
+      </div>
+      <div class="callout info"><b>nginx macht hier fast nichts</b>
+      Beide Portale werden von einem Standard-<code>nginx:alpine</code> nur als statische Dateien
+      ausgeliefert (der <code>public/</code>-Ordner ist read-only reingemountet). <b>Kein
+      Reverse-Proxy</b> — deshalb ruft der Browser die Backends direkt auf, und deshalb brauchen
+      wir CORS (siehe Lexikon).</div>
+    </section>
+
+    <!-- ═══════════ 8. LOSLEGEN ═══════════ -->
+    <section id="s8">
+      <h2><span class="chip">08</span> Loslegen (Praxis)</h2>
+      <h3>1 · Starten</h3>
+      <div class="cmd"><span class="c"># im Ordner rezeptshop/ ausführen</span><br>docker compose --profile dev up -d --build</div>
+      <p class="muted" style="font-size:.9rem"><code>--profile dev</code> startet zusätzlich pgAdmin, Mailpit und den db-seed (Testdaten). <code>-d</code> = im Hintergrund, <code>--build</code> = Images neu bauen.</p>
+
+      <h3>2 · Alle Adressen auf einen Blick</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Dienst</th><th>URL</th><th>Zweck</th></tr></thead>
+        <tbody>
+          <tr><td>user-portal</td><td><a href="http://localhost:8080">localhost:8080</a></td><td>Kunden-Shop</td></tr>
+          <tr><td>admin-portal</td><td><a href="http://localhost:8081">localhost:8081</a></td><td>Verwaltung</td></tr>
+          <tr><td>auth-service</td><td>localhost:3001</td><td>Login / JWT</td></tr>
+          <tr><td>inventory-service</td><td>localhost:3003</td><td>Produkte / Kauf</td></tr>
+          <tr><td>wishlist-service</td><td>localhost:3004</td><td>Wunschlisten</td></tr>
+          <tr><td>user-service</td><td>localhost:3005</td><td>User-Verwaltung</td></tr>
+          <tr><td>authorization-service</td><td class="muted">— kein Host-Port —</td><td>nur intern erreichbar</td></tr>
+          <tr><td>pgAdmin</td><td><a href="http://localhost:5050">localhost:5050</a></td><td>DB im Browser</td></tr>
+          <tr><td>Mailpit</td><td><a href="http://localhost:8025">localhost:8025</a></td><td>Postfach (Testmails)</td></tr>
+          <tr><td>PostgreSQL</td><td>localhost:5432</td><td>Datenbank</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>3 · Test-Accounts (nur im dev-Profil)</h3>
+      <p>Alle Dev-Accounts haben dasselbe Passwort: <kbd>Test1234!</kbd></p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>E-Mail</th><th>Rolle</th><th>Besonderheit</th></tr></thead>
+        <tbody>
+          <tr><td>admin@test.de</td><td>admin</td><td>Voller Admin-Zugriff</td></tr>
+          <tr><td>max@test.de</td><td>user</td><td>Normaler User (hat Warenkorb + Bestellungen)</td></tr>
+          <tr><td>anna@test.de</td><td>user</td><td>Normaler User</td></tr>
+          <tr><td>tom@test.de</td><td>user</td><td>E-Mail <b>unverifiziert</b> → kann nicht kaufen</td></tr>
+          <tr><td>gesperrt@test.de</td><td>user</td><td><b>Gesperrt</b> → kein Login</td></tr>
+          <tr><td>verify@test.de</td><td>user</td><td>Unverifiziert, für Bestätigungs-Flow</td></tr>
+          <tr><td>magic@test.de</td><td>user</td><td>Verifiziert, für Magic-Link-Flow</td></tr>
+        </tbody>
+      </table></div>
+      <p class="muted" style="font-size:.9rem">Ohne <code>--profile dev</code> gibt es nur den Bootstrap-Admin aus <code>init.sql</code>: <kbd>admin@rezeptshop.de</kbd> / <kbd>Admin1234!</kbd></p>
+
+      <div class="callout warn"><b>⚠️ Achtung: db-seed setzt die DB bei JEDEM dev-Start zurück</b>
+      Der <code>db-seed</code>-Container macht zuerst ein <code>TRUNCATE … RESTART IDENTITY CASCADE</code>
+      auf alle Tabellen. Das <b>löscht auch selbst registrierte Accounts und alle Testkäufe</b>.
+      Wenn du Daten behalten willst, starte ohne <code>--profile dev</code>.</div>
+
+      <h3>4 · Nützliche Zusätze</h3>
+      <div class="grid two">
+        <div class="card"><b>pgAdmin</b> <span class="muted">:5050</span><p style="font-size:.88rem">DB im Browser ansehen. Beim Anlegen der Server-Verbindung als Host <code>postgres</code> eintragen (der Container-Name!), Port <code>5432</code> — nicht <code>localhost</code>, weil pgAdmin selbst im Docker-Netz läuft.</p></div>
+        <div class="card"><b>Bruno</b><p style="font-size:.88rem">Desktop-App für API-Tests. Kollektion in <code>rezeptshop/bruno/</code> öffnen, Environment <code>local</code> wählen, den Login-Request ausführen — er setzt das Token automatisch für die Folge-Requests.</p></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 9. API-REFERENZ ═══════════ -->
+    <section id="s9">
+      <h2><span class="chip">09</span> API-Referenz — alle Endpunkte</h2>
+      <p>Alle Endpunkte aller Services, gegen den echten Code geprüft. Filter nach Service, klick
+      einen Endpunkt für Details.</p>
+      <div class="legend">
+        <span>🔒 JWT nötig</span><span>👑 nur Admin</span><span>⚙️ nur intern (Service→Service)</span><span>🌐 öffentlich</span>
+      </div>
+      <div class="api-filter" id="apiFilter"></div>
+      <div id="apiList"></div>
+    </section>
+
+    <!-- ═══════════ 10. STOLPERFALLEN ═══════════ -->
+    <section id="s10">
+      <h2><span class="chip">10</span> Merkzettel: Stolperfallen</h2>
+      <p>Die Dinge, die neue Teammitglieder am häufigsten verwirren — kompakt gesammelt.</p>
+      <div id="traps"></div>
+    </section>
+
+    <!-- ═══════════ 11. QUIZ ═══════════ -->
+    <section id="s11">
+      <h2><span class="chip">11</span> Selbsttest-Quiz</h2>
+      <p>Prüf dein Verständnis. Sofortiges Feedback mit Erklärung — kein Login, keine Auswertung
+      wird gespeichert.</p>
+      <div id="quiz"></div>
+      <div class="quiz-score" id="quizScore"></div>
+
+      <div class="footer">
+        <p>🥘 <b>Rezeptshop</b> · Web-Engineering-Onboarding · Diese Datei ist komplett offline
+        nutzbar (keine externen Ressourcen). Fragen? Bekirtaha koordiniert Infrastruktur &amp;
+        Gesamtarchitektur.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+"use strict";
+
+// ─────────────────────────────────────────────────────────────
+// 2 · ARCHITEKTUR — Detail-Daten
+// ─────────────────────────────────────────────────────────────
+var ARCH = {
+  "user-portal":{t:"user-portal",tag:"port",tagtxt:"Port 8080",role:"Frontend (nginx)",
+    d:"Der Kunden-Shop. Ein Standard-nginx liefert statische HTML/JS/CSS-Dateien aus. Im Browser laufen die Vanilla-JS-Seiten, die per fetch die Backends aufrufen. Kein Reverse-Proxy."},
+  "admin-portal":{t:"admin-portal",tag:"port",tagtxt:"Port 8081",role:"Frontend (nginx)",
+    d:"Das Verwaltungsportal für Admins (Produkte & Benutzer). Technisch identisch zum user-portal, nur andere Seiten. Schützt Seiten zusätzlich per requireAdmin()."},
+  "auth-service":{t:"auth-service",tag:"port",tagtxt:"Port 3001",role:"Backend",
+    d:"Stellt Login-Tokens (JWT) aus und ist der EINZIGE Dienst, der JWT_SECRET kennt und Tokens prüft (/validate). Register, Login, Logout, E-Mail-Bestätigung, Magic-Link."},
+  "authorization-service":{t:"authorization-service",tag:"noport",tagtxt:"KEIN Host-Port",role:"Backend (intern)",
+    d:"Der 'Türsteher'. Entscheidet, wer was darf (/check) und vergibt Custom-Rechte (/grant). Prüft KEINE JWTs — er vertraut den userId/role-Feldern, die ihm ein anderer Service schickt. GENAU DESHALB darf er nie von außen erreichbar sein (kein ports-Mapping)."},
+  "inventory-service":{t:"inventory-service",tag:"port",tagtxt:"Port 3003",role:"Backend",
+    d:"Produkte (Suche, CRUD), Warenkorb und der Kaufprozess (inkl. Bestandsreduktion in einer Transaktion). Schickt nach dem Kauf eine Bestätigungsmail über Mailpit."},
+  "wishlist-service":{t:"wishlist-service",tag:"port",tagtxt:"Port 3004",role:"Backend",
+    d:"Wunschlisten: erstellen, bearbeiten, Produkte hinzufügen/entfernen, löschen und mit anderen Usern teilen (read/write). Jeder Zugriff wird beim authorization-service geprüft."},
+  "user-service":{t:"user-service",tag:"port",tagtxt:"Port 3005",role:"Backend",
+    d:"Admin-Funktionen rund um User: Profil abrufen, löschen, Admins anlegen, sperren/entsperren. Ein Sperren wirkt sofort, weil /validate den locked-Status live prüft."},
+  "postgres":{t:"postgres",tag:"port",tagtxt:"Port 5432",role:"Datenbank",
+    d:"Eine gemeinsame PostgreSQL-16-Datenbank für ALLE Services. Beim ersten Start wird init.sql automatisch ausgeführt (11 Tabellen). Die Daten liegen im Volume postgres_data (bleiben über Neustarts erhalten)."},
+  "pgadmin":{t:"pgadmin",tag:"dev",tagtxt:"dev · Port 5050",role:"Werkzeug (nur dev)",
+    d:"Web-Oberfläche, um die Datenbank im Browser anzusehen und Queries auszuführen. Läuft nur im dev-Profil. Verbindung mit Host 'postgres' (Container-Name), nicht localhost."},
+  "mailpit":{t:"mailpit",tag:"dev",tagtxt:"dev · 8025 / 1025",role:"Mail-Catcher (nur dev)",
+    d:"Fängt in der Entwicklung ALLE ausgehenden Mails ab (Bestätigung, Magic-Link, Kaufbestätigung) — es werden keine echten Mails verschickt. Web-Postfach: localhost:8025, SMTP-Eingang: Port 1025."},
+  "db-seed":{t:"db-seed",tag:"dev",tagtxt:"dev · einmalig",role:"Hilfs-Container (nur dev)",
+    d:"Läuft beim dev-Start EINMAL, spielt dummy-daten.sql ein und beendet sich dann wieder. ACHTUNG: macht vorher TRUNCATE … CASCADE — setzt die DB komplett zurück."}
+};
+
+function renderArchDetail(k){
+  var a = ARCH[k]; if(!a) return;
+  var p = document.getElementById("archDetail");
+  p.innerHTML = '<span class="tag '+a.tag+'">'+a.tagtxt+'</span>' +
+    '<span class="tag" style="background:#eef1f6;color:#5c6472">'+a.role+'</span>' +
+    '<h4>'+a.t+'</h4><p>'+a.d+'</p>';
+}
+(function(){
+  var boxes = document.querySelectorAll("#archGrid .box");
+  boxes.forEach(function(b){
+    b.addEventListener("click", function(){
+      boxes.forEach(function(x){x.classList.remove("active");});
+      b.classList.add("active");
+      renderArchDetail(b.getAttribute("data-k"));
+    });
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// 3 · LEXIKON
+// ─────────────────────────────────────────────────────────────
+var LEX = [
+  {ic:"🐳",t:"Docker & Docker Compose",
+    what:"Docker packt jeden Dienst samt seiner benötigten Software in einen isolierten 'Container' — ein abgeschottetes Mini-System. Docker Compose beschreibt in einer Datei (docker-compose.yml), welche Container es gibt und wie sie zusammenspielen, und startet sie alle mit einem Befehl.",
+    why:"So läuft das Projekt bei jedem Teammitglied identisch, ohne 'bei mir geht's aber'-Probleme. Ein Befehl startet DB + 5 Services + 2 Frontends.",
+    where:"docker-compose.yml im Repo-Root. Profile: 'dev' startet zusätzlich pgadmin, mailpit und db-seed. OHNE --profile dev: keine Testdaten, und Mails schlagen fehl (kein Mailpit da)."},
+  {ic:"🌐",t:"nginx",
+    what:"nginx ist ein Webserver. Bei uns macht er aber nur EINE simple Sache: statische Dateien (HTML/JS/CSS) ausliefern. Wir nutzen das Standard-Image nginx:alpine ohne eigene Konfiguration; der public/-Ordner ist read-only als Webroot gemountet.",
+    why:"Ein Frontend muss irgendwie an den Browser ausgeliefert werden — das erledigt nginx zuverlässig und mit null Aufwand.",
+    where:"WICHTIG: Es ist KEIN Reverse-Proxy! nginx leitet keine API-Aufrufe weiter. Der Browser ruft die Backends direkt auf localhost:3001/3003/3004/3005 auf — genau deshalb brauchen wir CORS."},
+  {ic:"⚙️",t:"Node.js + Express 5",
+    what:"Node.js lässt JavaScript außerhalb des Browsers laufen (auf dem Server). Express ist ein schlankes Framework darauf, um Web-Routen (GET /api/...) zu definieren.",
+    why:"Leichtgewichtig, für alle im Team vertraut, ideal für kleine Services.",
+    where:"Alle 5 Backends. Wir schreiben CommonJS (require(...), kein import, kein TypeScript). Keine Controller-Schicht — die Logik steht direkt in den Route-Handlern. Express-5-Falle: app.options('*') crasht; stattdessen deckt app.use(cors(...)) den Preflight automatisch ab."},
+  {ic:"🐘",t:"PostgreSQL + pg",
+    what:"PostgreSQL ist unsere relationale Datenbank (Tabellen mit Zeilen/Spalten). 'pg' ist die Node.js-Bibliothek, mit der die Services SQL-Abfragen schicken.",
+    why:"Robust, kostenlos, Standard. Eine gemeinsame DB hält das Projekt einfach.",
+    where:"Jeder Service baut mit new Pool({connectionString: DATABASE_URL}) einen Verbindungs-Pool auf. Für zusammenhängende Schreibvorgänge (z.B. Kauf) nutzen wir Transaktionen: client.query('BEGIN') … 'COMMIT' (oder 'ROLLBACK' bei Fehler)."},
+  {ic:"🎫",t:"JWT (jsonwebtoken)",
+    what:"Ein JWT (JSON Web Token) ist ein digital signierter 'Ausweis'. Nach dem Login bekommt der Browser so ein Token und schickt es bei jedem weiteren Aufruf mit. Der Server erkennt an der Signatur, dass es echt ist — ohne bei jedem Aufruf das Passwort zu prüfen.",
+    why:"Zustandsloses Login: der Server muss sich keine Sitzungen merken.",
+    where:"Payload (Inhalt) = {userId, role, email}, 24h gültig. Jede Ausstellung bekommt eine zufällige jti (Token-ID) → Logout schreibt die jti in die token_blacklist-Tabelle, danach wird das Token abgelehnt. NUR der auth-service kennt das JWT_SECRET und prüft Tokens."},
+  {ic:"🔑",t:"bcryptjs",
+    what:"Eine Bibliothek, die Passwörter 'hasht' — also in einen unumkehrbaren Zeichensalat verwandelt, bevor sie gespeichert werden. Beim Login wird das eingegebene Passwort erneut gehasht und verglichen.",
+    why:"Passwörter dürfen NIE im Klartext in der DB liegen. Wird die DB gestohlen, sind die Passwörter trotzdem geschützt.",
+    where:"Registrierung & Admin-Anlage: bcrypt.hash(password, 10) (cost 10 = Rechenaufwand). Wir nehmen bcryptjs (reines JavaScript) statt bcrypt, weil bcrypt einen nativen Build bräuchte, der im schlanken Alpine-Container Ärger macht."},
+  {ic:"🔗",t:"CORS (cors-Paket)",
+    what:"Browser haben eine Sicherheitsregel (Same-Origin-Policy): eine Seite von localhost:8080 darf nicht einfach eine andere Adresse (localhost:3003) aufrufen. CORS ist die Erlaubnis-Regelung, mit der der Server sagt: 'Anfragen von :8080 sind ok.' Bei manchen Anfragen schickt der Browser vorher eine OPTIONS-'Preflight'-Frage.",
+    why:"Weil unsere Frontends (:8080/:8081) und Backends (:3001…) auf verschiedenen Ports laufen — für den Browser sind das verschiedene Origins.",
+    where:"cors-Paket in allen 5 Services: app.use(cors({origin: CORS_ORIGINS})). CORS_ORIGINS=http://localhost:8080,http://localhost:8081. Kein credentials (wir nutzen das JWT im Header, keine Cookies). Bruno/curl senden keinen Origin-Header → sie sind von CORS gar nicht betroffen."},
+  {ic:"📧",t:"nodemailer + Mailpit",
+    what:"nodemailer ist die Node-Bibliothek zum Mailversand. Mailpit ist ein 'Mail-Catcher': ein Fake-Postfach, das in der Entwicklung alle Mails abfängt, statt sie wirklich zu verschicken.",
+    why:"Wir wollen Registrierungs-, Magic-Link- und Kaufbestätigungs-Mails testen, ohne echte E-Mails zu verschicken.",
+    where:"auth-service (Bestätigung, Magic-Link) und inventory-service (Kaufbestätigung) senden an SMTP mailpit:1025. Das Postfach öffnest du im Browser: localhost:8025. Mailpit läuft nur im dev-Profil."},
+  {ic:"📄",t:"dotenv",
+    what:"dotenv lädt Umgebungsvariablen (Konfigurationswerte wie Passwörter, URLs) aus einer .env-Datei, damit sie nicht im Code stehen.",
+    why:"Geheimnisse (JWT_SECRET, DB-Passwort) gehören nicht in den Quellcode/GitHub.",
+    where:"EINE zentrale .env im Repo-Root — alle Services teilen sie (via Pfad-Auflösung geladen). Lokal steht dort z.B. localhost; in Docker verdrahtet Compose stattdessen die Container-Namen (postgres, auth-service, mailpit)."},
+  {ic:"🧪",t:"Bruno",
+    what:"Eine Desktop-App zum Testen von APIs (ähnlich Postman): man definiert Requests und schickt sie per Klick ab.",
+    why:"So testen wir jeden Endpunkt, während wir ihn bauen, ohne extra Frontend.",
+    where:"Kollektion in rezeptshop/bruno/ (Teil des Repos, per git pull für alle da). Ein Ordner pro Service, eine .bru-Datei pro Endpunkt. Environment 'local' enthält Basis-URLs + Token-Variablen; der Login-Request setzt das Token automatisch für Folge-Tests."},
+  {ic:"🌿",t:"Git / GitHub",
+    what:"Git ist die Versionsverwaltung (speichert die Historie des Codes), GitHub der Ort, wo wir den Code teilen. Wir arbeiten im Feature-Branch-Workflow: für jede Aufgabe ein eigener Zweig.",
+    why:"So können fünf Leute gleichzeitig arbeiten, ohne sich zu überschreiben.",
+    where:"Goldene Regel: NIE direkt in main committen. Neuer Branch → committen → pushen → Pull Request auf GitHub → Review → Merge."}
+];
+(function(){
+  var host = document.getElementById("lexicon");
+  LEX.forEach(function(x){
+    var el = document.createElement("div");
+    el.className = "acc";
+    el.innerHTML =
+      '<button><span><span class="ic">'+x.ic+'</span> '+x.t+'</span><span class="arw">▶</span></button>' +
+      '<div class="body"><dl>'+
+        '<dt>Was ist das?</dt><dd>'+x.what+'</dd>'+
+        '<dt>Warum nutzen wir es?</dt><dd>'+x.why+'</dd>'+
+        '<dt>Wo im Projekt?</dt><dd>'+x.where+'</dd>'+
+      '</dl></div>';
+    el.querySelector("button").addEventListener("click", function(){ el.classList.toggle("open"); });
+    host.appendChild(el);
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// 4 · REQUEST-FLOWS
+// ─────────────────────────────────────────────────────────────
+var FLOWS = {
+  cart:{
+    name:"🛒 Produkt in den Warenkorb",
+    nodes:["Browser :8080","inventory :3003","auth /validate","postgres"],
+    steps:[
+      {n:0,title:"Klick im Shop",txt:"Im user-portal (:8080) klickst du 'In den Warenkorb'. apiFetch() aus api.js baut den Aufruf POST /api/cart mit dem Token aus dem localStorage im Header: Authorization: Bearer &lt;token&gt;."},
+      {n:0,title:"CORS-Preflight (evtl.)",txt:"Weil :8080 eine andere Origin als :3003 ist, schickt der Browser ggf. zuerst eine OPTIONS-'Preflight'-Anfrage. Das cors-Paket im inventory-service beantwortet sie automatisch mit 'ok, :8080 ist erlaubt'."},
+      {n:1,title:"Request kommt an",txt:"POST /api/cart erreicht den inventory-service. Bevor die eigentliche Logik läuft, greift die authenticate-Middleware: Sie holt das Token aus dem Header — aber prüfen kann sie es selbst nicht (nur auth-service kennt JWT_SECRET)."},
+      {n:2,title:"Token validieren",txt:"Die Middleware ruft POST auth-service/api/auth/validate auf. Der auth-service prüft: Signatur & Ablauf des JWT, ob die jti auf der Blacklist steht (ausgeloggt?) und LIVE in der DB, ob der User existiert und nicht gesperrt (locked) ist."},
+      {n:1,title:"req.user gesetzt",txt:"Antwort {valid:true, userId, role, email} kommt zurück. Die Middleware hängt das als req.user an den Request. KEIN authorization-Check nötig: Der Warenkorb gehört immer dem eingeloggten User — Cross-User-Zugriff ist gar nicht möglich."},
+      {n:3,title:"Bestand prüfen & speichern",txt:"inventory prüft in der DB, ob genug Bestand da ist (sonst 409). Dann Upsert in cart_items: liegt das Produkt schon im Korb, wird die Menge gesetzt (nicht addiert)."},
+      {n:0,title:"Fertig · 200",txt:"Der Service lädt den Korb inkl. Zwischensummen und schickt 200 mit dem Korb-JSON zurück. Das Frontend zeigt den aktualisierten Warenkorb an."}
+    ]
+  },
+  admin:{
+    name:"👑 Admin legt Produkt an",
+    nodes:["Browser :8081","inventory :3003","auth /validate","authz /check","postgres"],
+    steps:[
+      {n:0,title:"Formular im Admin-Portal",txt:"Im admin-portal (:8081) füllst du das Produktformular aus und sendest POST /api/products mit deinem Admin-Token."},
+      {n:1,title:"authenticate-Middleware",txt:"inventory-service empfängt den Request. Die authenticate-Middleware zieht das Token aus dem Header."},
+      {n:2,title:"Token validieren",txt:"POST auth-service/api/auth/validate: Signatur, Blacklist und live locked/role aus der DB werden geprüft. Zurück kommt {valid:true, role:'admin', ...} → req.user gesetzt."},
+      {n:3,title:"Berechtigung prüfen",txt:"JETZT kommt der Türsteher: inventory ruft POST authorization-service/api/authorization/check auf mit {resourceType:'product', action:'write', userId, role}. Hardcodierte Regel: nur role==='admin' darf Produkte schreiben."},
+      {n:1,title:"Erlaubt → einfügen",txt:"authz antwortet {allowed:true}. inventory validiert die Eingaben (name, price, amount) und macht INSERT INTO products."},
+      {n:4,title:"Gespeichert · 201",txt:"Das neue Produkt wird mit 201 zurückgegeben. Wäre der User kein Admin, käme von authz {allowed:false} → inventory antwortet 403, kein INSERT."}
+    ]
+  },
+  register:{
+    name:"✉️ Registrierung + E-Mail-Bestätigung",
+    nodes:["Browser :8080","auth :3001","postgres","mailpit :8025"],
+    steps:[
+      {n:0,title:"Registrieren",txt:"Auf login.html (Tab 'Registrieren') gibst du E-Mail + Passwort ein → POST /api/auth/register an den auth-service."},
+      {n:1,title:"Prüfen & hashen",txt:"auth-service prüft Format und ob die E-Mail schon existiert (409). Dann bcrypt.hash(password, 10) — das Passwort wird nie im Klartext gespeichert."},
+      {n:2,title:"Eine Transaktion",txt:"In EINER Transaktion (BEGIN … COMMIT): INSERT des Users (email_verified=false) UND ein verification_token (24h gültig, in SQL: NOW() + INTERVAL '24 hours'). Entweder beides oder nichts."},
+      {n:3,title:"Bestätigungsmail",txt:"Nach dem Commit verschickt der auth-service die Bestätigungsmail über Mailpit (SMTP mailpit:1025). Sie landet im Test-Postfach unter localhost:8025 — mit einem Link auf confirm.html?token=…"},
+      {n:0,title:"User klickt Link",txt:"Der User öffnet den Link. confirm.html liest den ?token= aus der URL und ruft GET /api/auth/confirm/:token auf."},
+      {n:1,title:"Ablauf in SQL prüfen",txt:"auth-service prüft den Token: nicht benutzt? nicht abgelaufen? Der Ablauf wird IN SQL berechnet (expires_at < NOW()) — nie in JavaScript, weil die DB in UTC rechnet und ein JS-Vergleich um Stunden danebenläge."},
+      {n:2,title:"Verifiziert",txt:"Passt alles: email_verified=true setzen und den Token als used markieren (wieder atomar). Ab jetzt darf der User auch kaufen. (Login ging schon vorher — nur Kaufen verlangt eine bestätigte E-Mail.)"}
+    ]
+  }
+};
+var flowKey = "cart", flowIdx = 0;
+function renderFlow(){
+  var f = FLOWS[flowKey];
+  // tabs
+  var tabs = document.getElementById("flowTabs");
+  tabs.innerHTML = "";
+  Object.keys(FLOWS).forEach(function(k){
+    var b = document.createElement("button");
+    b.textContent = FLOWS[k].name;
+    if(k===flowKey) b.className="active";
+    b.addEventListener("click", function(){ flowKey=k; flowIdx=0; renderFlow(); });
+    tabs.appendChild(b);
+  });
+  // stage nodes
+  var stage = document.getElementById("flowStage");
+  stage.innerHTML = "";
+  var activeNode = f.steps[flowIdx].n;
+  f.nodes.forEach(function(nm,i){
+    var d = document.createElement("div");
+    d.className = "fnode" + (i===activeNode?" on":"");
+    d.textContent = nm;
+    stage.appendChild(d);
+  });
+  // step
+  var s = f.steps[flowIdx];
+  document.getElementById("flowStep").innerHTML =
+    '<div class="stepno">Schritt '+(flowIdx+1)+' von '+f.steps.length+'</div>'+
+    '<h4>'+s.title+'</h4><p>'+s.txt+'</p>';
+  document.getElementById("flowPrev").disabled = flowIdx===0;
+  document.getElementById("flowNext").disabled = flowIdx===f.steps.length-1;
+  document.getElementById("flowPos").textContent = f.name;
+}
+document.getElementById("flowPrev").addEventListener("click", function(){ if(flowIdx>0){flowIdx--;renderFlow();} });
+document.getElementById("flowNext").addEventListener("click", function(){ if(flowIdx<FLOWS[flowKey].steps.length-1){flowIdx++;renderFlow();} });
+renderFlow();
+
+// ─────────────────────────────────────────────────────────────
+// 5 · SERVICES
+// ─────────────────────────────────────────────────────────────
+var SERVICES = [
+  {ic:"🎫",t:"auth-service",port:"Port 3001",
+    pts:["Stellt die JWT-Login-Tokens aus und ist der EINZIGE Dienst, der JWT_SECRET zum Prüfen nutzt (/validate).",
+      "Endpunkte: register, confirm, login, logout, me, magic-link, magic-login, validate.",
+      "Anti-Enumeration: bei Login & Magic-Link identische Fehlermeldungen, egal ob die E-Mail existiert — so verrät man keine registrierten Adressen.",
+      "Logout schreibt die jti des Tokens in die token_blacklist; ein Cleanup-Job räumt alle 6h abgelaufene Einträge weg.",
+      "Gesperrte User dürfen noch /me und /logout aufrufen. Login geht auch unverifiziert — nur Kaufen verlangt später eine bestätigte E-Mail."]},
+  {ic:"🛡️",t:"authorization-service",port:"kein Host-Port",
+    pts:["Der 'Türsteher': entscheidet, wer was darf. Prüft KEINE JWTs — er vertraut dem übergebenen userId/role, weshalb er nie von außen erreichbar sein darf.",
+      "/check: zuerst hardcodierte Grundregeln (Admin darf immer; jeder Eingeloggte darf Produkte lesen; eigenes Profil; eigene Wishlist), sonst DB-Lookup in der permissions-Tabelle.",
+      "Rechte-Stufen: read(1) < write(2) < owner(3). Eine gespeicherte höhere Stufe deckt niedrigere Aktionen mit ab.",
+      "Fail-safe: eine unbekannte Aktion verlangt automatisch die höchste Stufe — lieber fälschlich verbieten als fälschlich erlauben.",
+      "/grant: Upsert einer Custom-Permission — nur der echte Besitzer oder ein Admin darf Rechte vergeben."]},
+  {ic:"📦",t:"inventory-service",port:"Port 3003",
+    pts:["Produkte: Suche nach name/category/minPrice/maxPrice (frei kombinierbar). Schreiben (POST/PUT/DELETE) nur für Admins — geprüft via authz /check.",
+      "Warenkorb: POST setzt die Menge absolut (Upsert, nicht addieren). Fehlt der Bestand → 409.",
+      "Kauf (POST /orders): läuft in EINER Transaktion mit SELECT … FOR UPDATE auf die Produktzeilen, damit zwei gleichzeitige Käufe nicht 'überverkaufen'.",
+      "Kauf verlangt eine verifizierte E-Mail (sonst 403). Gespeichert wird der purchase_price = Preis zum Kaufzeitpunkt (Preishistorie).",
+      "Nach erfolgreichem Commit: Warenkorb leeren und Kaufbestätigungsmail über Mailpit senden (ein Mailfehler kippt den Kauf NICHT)."]},
+  {ic:"⭐",t:"wishlist-service",port:"Port 3004",
+    pts:["Volles CRUD für Wunschlisten plus Produkte hinzufügen/entfernen und Teilen.",
+      "Jeder Einzel-Zugriff (GET/PUT/DELETE einer Liste) fragt authz /check mit der ownerId der Liste.",
+      "GET / liefert eigene UND geteilte Listen — die Filterung passiert in SQL per EXISTS auf der permissions-Tabelle.",
+      "/share vergibt nur read oder write — 'owner' ist NICHT teilbar (eine Liste hat genau einen Besitzer).",
+      "Löschen einer Liste verlangt die owner-Stufe; wishlist_product wird per CASCADE mitgelöscht."]},
+  {ic:"👥",t:"user-service",port:"Port 3005",
+    pts:["Admin-orientierte User-Funktionen. GET /:id: eigenes Profil oder Admin.",
+      "DELETE /:id: Self-Delete für normale User ok; ein Admin darf sich aber NICHT selbst löschen → 400 (Schutz vor Aussperren).",
+      "POST /admin: nur ein Admin darf einen weiteren Admin anlegen.",
+      "lock/unlock: nur Admin; ein Admin darf sich nicht selbst sperren.",
+      "Eine Sperre wirkt SOFORT, weil der auth-service bei jedem /validate den locked-Status live aus der DB liest."]}
+];
+(function(){
+  var host = document.getElementById("services");
+  SERVICES.forEach(function(x){
+    var el = document.createElement("div");
+    el.className="acc";
+    var li = x.pts.map(function(p){return "<li>"+p+"</li>";}).join("");
+    el.innerHTML =
+      '<button><span><span class="ic">'+x.ic+'</span> '+x.t+' <span class="muted" style="font-weight:400;font-size:.82rem">· '+x.port+'</span></span><span class="arw">▶</span></button>'+
+      '<div class="body"><ul style="margin:12px 0 0;padding-left:18px">'+li+'</ul></div>';
+    el.querySelector("button").addEventListener("click", function(){ el.classList.toggle("open"); });
+    host.appendChild(el);
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// 6 · DATENBANK-TABELLEN
+// ─────────────────────────────────────────────────────────────
+var TABLES = [
+  {n:"users",c:"user_id, email, password, role, locked, email_verified, created_at",d:"Alle Nutzerkonten. role = 'admin'|'user'. Passwort ist bcrypt-gehasht."},
+  {n:"verification_tokens",c:"token, user_id, type, expires_at, used",d:"Einmal-Tokens für E-Mail-Bestätigung (24h) und Magic-Link (15 min)."},
+  {n:"token_blacklist",c:"jti, expires_at",d:"jti's ausgeloggter JWTs. /validate lehnt gelistete Tokens ab (= echtes Logout)."},
+  {n:"products",c:"product_id, name, description, price, amount, category",d:"Der Produktkatalog. amount = Lagerbestand."},
+  {n:"carts",c:"cart_id, user_id (UNIQUE)",d:"Ein Warenkorb pro User (UNIQUE-Constraint)."},
+  {n:"cart_items",c:"cart_id, product_id, quantity",d:"Positionen im Warenkorb. UNIQUE(cart_id, product_id)."},
+  {n:"orders",c:"order_id, user_id, date, status",d:"Abgeschlossene Bestellungen. user_id → SET NULL beim Löschen (Historie bleibt)."},
+  {n:"orderpositions",c:"order_id, product_id, purchase_price, amount",d:"Einzelposten. purchase_price = Preis zum Kaufzeitpunkt (historisiert)."},
+  {n:"wishlists",c:"list_id, owner_user_id, name, description",d:"Wunschlisten. owner_user_id = Besitzer."},
+  {n:"wishlist_product",c:"list_id, product_id (Composite PK)",d:"Welche Produkte in welcher Liste sind."},
+  {n:"permissions",c:"user_id, resource_type, resource_id, permission",d:"Custom-Rechte (read/write/owner) für product/user/wishlist. UNIQUE(user_id,type,id)."}
+];
+(function(){
+  var host = document.getElementById("dbCards");
+  TABLES.forEach(function(t){
+    var el = document.createElement("div");
+    el.className="db-card";
+    el.innerHTML = "<h4>"+t.n+"</h4><div class='cols'>"+t.c+"</div><p>"+t.d+"</p>";
+    host.appendChild(el);
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// 9 · API-REFERENZ  (gegen backend/*/src/routes/*.js verifiziert)
+// ─────────────────────────────────────────────────────────────
+var API = [
+  // auth-service
+  {s:"auth",m:"POST",p:"/api/auth/register",b:["🌐"],d:"Registrieren + Bestätigungsmail",
+    ex:'{ "email": "neu@test.de", "password": "Geheim123" }', perm:"Öffentlich. Passwort ≥ 8 Zeichen, E-Mail muss frei sein."},
+  {s:"auth",m:"GET",p:"/api/auth/confirm/:token",b:["🌐"],d:"E-Mail bestätigen",
+    ex:"", perm:"Öffentlich. Token muss gültig, unbenutzt und (SQL-geprüft) nicht abgelaufen sein."},
+  {s:"auth",m:"POST",p:"/api/auth/login",b:["🌐"],d:"Login → JWT",
+    ex:'{ "email": "max@test.de", "password": "Test1234!" }', perm:"Öffentlich. Gesperrte User → 403. Unverifizierte dürfen sich einloggen."},
+  {s:"auth",m:"POST",p:"/api/auth/logout",b:["🔒"],d:"Token invalidieren (Blacklist)",
+    ex:"", perm:"JWT nötig. Schreibt die jti in token_blacklist."},
+  {s:"auth",m:"GET",p:"/api/auth/me",b:["🔒"],d:"Eigene Identität + Verify-Status",
+    ex:"", perm:"JWT nötig. email_verified kommt frisch aus der DB."},
+  {s:"auth",m:"POST",p:"/api/auth/magic-link",b:["🌐"],d:"Einmal-Login anfordern (Mail)",
+    ex:'{ "email": "magic@test.de" }', perm:"Öffentlich. Identische Antwort, ob E-Mail existiert oder nicht (Anti-Enumeration)."},
+  {s:"auth",m:"GET",p:"/api/auth/magic-login/:token",b:["🌐"],d:"Magic-Link öffnen → JWT",
+    ex:"", perm:"Öffentlich. Token wird einmalig verbraucht. Gesperrt → 403."},
+  {s:"auth",m:"POST",p:"/api/auth/magic-login",b:["🌐"],d:"Magic-Code eingeben → JWT",
+    ex:'{ "email": "magic@test.de", "code": "<token>" }', perm:"Öffentlich. Code + passende E-Mail nötig (gestohlener Code allein reicht nicht)."},
+  {s:"auth",m:"POST",p:"/api/auth/validate",b:["⚙️"],d:"Token prüfen (für andere Services)",
+    ex:'{ "token": "Bearer <jwt>" }', perm:"Intern. Prüft Signatur, Blacklist und live locked/exists in der DB. NICHT fürs Frontend."},
+  {s:"auth",m:"GET",p:"/health",b:["🌐"],d:"Läuft der Service?",ex:"",perm:"Öffentlich. Health-Check."},
+
+  // authorization-service
+  {s:"authz",m:"POST",p:"/api/authorization/check",b:["⚙️"],d:"Darf der User das?",
+    ex:'{ "userId": 2, "role": "user", "resourceType": "wishlist",\n  "resourceId": 5, "ownerId": 2, "action": "write" }',
+    perm:"Intern (kein Host-Port). Hardcodierte Regeln, sonst DB-Lookup. Antwort {allowed:true|false}."},
+  {s:"authz",m:"POST",p:"/api/authorization/grant",b:["⚙️"],d:"Custom-Recht vergeben",
+    ex:'{ "requesterId": 2, "requesterRole": "user", "targetUserId": 3,\n  "resourceType": "wishlist", "resourceId": 5, "ownerId": 2,\n  "permission": "read" }',
+    perm:"Intern. Nur Besitzer oder Admin. Upsert in permissions."},
+
+  // inventory-service
+  {s:"inventory",m:"GET",p:"/api/products",b:["🔒"],d:"Produktsuche",
+    ex:"?name=Mehl&category=Backen&minPrice=1&maxPrice=10", perm:"JWT nötig. Alle Query-Parameter optional & kombinierbar."},
+  {s:"inventory",m:"GET",p:"/api/products/:id",b:["🔒"],d:"Ein Produkt",
+    ex:"", perm:"JWT nötig."},
+  {s:"inventory",m:"POST",p:"/api/products",b:["🔒","👑"],d:"Produkt anlegen",
+    ex:'{ "name": "Basilikum", "price": 1.99, "amount": 50, "category": "Kräuter" }',
+    perm:"Admin. Geprüft via authz /check {resourceType:'product', action:'write'}."},
+  {s:"inventory",m:"PUT",p:"/api/products/:id",b:["🔒","👑"],d:"Produkt bearbeiten",
+    ex:'{ "price": 2.49 }', perm:"Admin. Nur übergebene Felder werden geändert."},
+  {s:"inventory",m:"DELETE",p:"/api/products/:id",b:["🔒","👑"],d:"Produkt löschen",
+    ex:"", perm:"Admin. orderpositions.product_id → SET NULL (Historie bleibt)."},
+  {s:"inventory",m:"GET",p:"/api/cart",b:["🔒"],d:"Warenkorb ansehen",
+    ex:"", perm:"JWT nötig. Gehört immer dem eingeloggten User (kein authz-Check)."},
+  {s:"inventory",m:"POST",p:"/api/cart",b:["🔒"],d:"Produkt in den Korb",
+    ex:'{ "productId": 3, "quantity": 2 }', perm:"JWT nötig. quantity optional (Default 1). Menge > Bestand → 409."},
+  {s:"inventory",m:"DELETE",p:"/api/cart/:productId",b:["🔒"],d:"Position entfernen",
+    ex:"", perm:"JWT nötig. Idempotent."},
+  {s:"inventory",m:"POST",p:"/api/orders",b:["🔒"],d:"Kauf abschließen",
+    ex:"", perm:"JWT + verifizierte E-Mail (sonst 403). Transaktion mit FOR UPDATE, Bestätigungsmail."},
+  {s:"inventory",m:"GET",p:"/api/orders",b:["🔒"],d:"Kaufhistorie",
+    ex:"", perm:"JWT nötig. Nur eigene Bestellungen, neueste zuerst."},
+  {s:"inventory",m:"GET",p:"/health",b:["🌐"],d:"Läuft der Service?",ex:"",perm:"Öffentlich."},
+
+  // wishlist-service
+  {s:"wishlist",m:"GET",p:"/api/wishlists",b:["🔒"],d:"Eigene + geteilte Listen",
+    ex:"", perm:"JWT nötig. Filterung per SQL EXISTS auf permissions."},
+  {s:"wishlist",m:"POST",p:"/api/wishlists",b:["🔒"],d:"Liste erstellen",
+    ex:'{ "name": "Sonntagsbrunch", "description": "..." }', perm:"JWT nötig. Ersteller wird Besitzer (kein authz-Check)."},
+  {s:"wishlist",m:"GET",p:"/api/wishlists/:id",b:["🔒"],d:"Liste + Produkte lesen",
+    ex:"", perm:"JWT + read (Besitzer/Admin oder per Share). authz /check."},
+  {s:"wishlist",m:"PUT",p:"/api/wishlists/:id",b:["🔒"],d:"Liste umbenennen",
+    ex:'{ "name": "Neuer Name" }', perm:"JWT + write. authz /check."},
+  {s:"wishlist",m:"POST",p:"/api/wishlists/:id/products",b:["🔒"],d:"Produkt hinzufügen",
+    ex:'{ "productId": 3 }', perm:"JWT + write. Idempotent (ON CONFLICT DO NOTHING)."},
+  {s:"wishlist",m:"DELETE",p:"/api/wishlists/:id/products/:productId",b:["🔒"],d:"Produkt entfernen",
+    ex:"", perm:"JWT + write. authz /check."},
+  {s:"wishlist",m:"DELETE",p:"/api/wishlists/:id",b:["🔒"],d:"Liste löschen",
+    ex:"", perm:"JWT + owner. CASCADE räumt wishlist_product."},
+  {s:"wishlist",m:"POST",p:"/api/wishlists/:id/share",b:["🔒"],d:"Liste teilen",
+    ex:'{ "userId": 3, "authorizationType": "read" }', perm:"Nur read|write (owner nicht teilbar). Nur Besitzer/Admin (authz /grant)."},
+  {s:"wishlist",m:"GET",p:"/health",b:["🌐"],d:"Läuft der Service?",ex:"",perm:"Öffentlich."},
+
+  // user-service
+  {s:"user",m:"GET",p:"/api/users/:id",b:["🔒"],d:"User-Details",
+    ex:"", perm:"JWT + eigenes Profil ODER Admin (authz action 'read')."},
+  {s:"user",m:"DELETE",p:"/api/users/:id",b:["🔒"],d:"User löschen",
+    ex:"", perm:"Self-Delete ok; Admin darf sich NICHT selbst löschen (400); Fremde nur als Admin."},
+  {s:"user",m:"POST",p:"/api/users/admin",b:["🔒","👑"],d:"Admin anlegen",
+    ex:'{ "email": "admin2@test.de", "password": "Admin1234!" }', perm:"Admin. authz action 'create'."},
+  {s:"user",m:"PUT",p:"/api/users/:id/lock",b:["🔒","👑"],d:"User sperren",
+    ex:"", perm:"Admin; nicht sich selbst. Wirkt sofort (live-Check in /validate)."},
+  {s:"user",m:"PUT",p:"/api/users/:id/unlock",b:["🔒","👑"],d:"User entsperren",
+    ex:"", perm:"Admin; nicht sich selbst."},
+  {s:"user",m:"GET",p:"/health",b:["🌐"],d:"Läuft der Service?",ex:"",perm:"Öffentlich."}
+];
+var SVC_LABELS = {all:"Alle",auth:"auth (3001)",authz:"authz (intern)",inventory:"inventory (3003)",wishlist:"wishlist (3004)",user:"user (3005)"};
+var apiFilterKey = "all";
+function renderApi(){
+  // filter buttons
+  var fh = document.getElementById("apiFilter");
+  fh.innerHTML = "";
+  Object.keys(SVC_LABELS).forEach(function(k){
+    var b = document.createElement("button");
+    b.textContent = SVC_LABELS[k];
+    if(k===apiFilterKey) b.className="active";
+    b.addEventListener("click", function(){ apiFilterKey=k; renderApi(); });
+    fh.appendChild(b);
+  });
+  // list grouped by service
+  var host = document.getElementById("apiList");
+  host.innerHTML = "";
+  var order = ["auth","authz","inventory","wishlist","user"];
+  order.forEach(function(svc){
+    if(apiFilterKey!=="all" && apiFilterKey!==svc) return;
+    var eps = API.filter(function(e){return e.s===svc;});
+    if(!eps.length) return;
+    var head = document.createElement("div");
+    head.className="svc-head";
+    head.textContent = SVC_LABELS[svc];
+    host.appendChild(head);
+    eps.forEach(function(e){
+      var el = document.createElement("div");
+      el.className="ep";
+      var exBlock = e.ex ? '<pre>'+escapeHtml(e.ex)+'</pre>' : '';
+      el.innerHTML =
+        '<button>'+
+          '<span class="method m-'+e.m+'">'+e.m+'</span>'+
+          '<span class="path">'+e.p+'</span>'+
+          '<span class="badges">'+e.b.join(" ")+'</span>'+
+          '<span class="desc">'+e.d+'</span>'+
+        '</button>'+
+        '<div class="ep-body">'+
+          (e.ex?'<b>Beispiel:</b>'+exBlock:'')+
+          '<b>Berechtigung:</b> '+e.perm+
+        '</div>';
+      el.querySelector("button").addEventListener("click", function(){ el.classList.toggle("open"); });
+      host.appendChild(el);
+    });
+  });
+}
+function escapeHtml(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+renderApi();
+
+// ─────────────────────────────────────────────────────────────
+// 10 · STOLPERFALLEN
+// ─────────────────────────────────────────────────────────────
+var TRAPS = [
+  "authorization-service hat KEINEN Host-Port und prüft KEINE JWTs — er vertraut dem übergebenen userId/role. Deshalb darf er nie von außen erreichbar sein.",
+  "Das Frontend spricht den authorization-service NIE direkt an — er fehlt bewusst in der SERVICES-Map von api.js.",
+  "Zeitvergleiche IMMER in SQL (expires_at < NOW()), nie in JavaScript — die DB rechnet in UTC (zeitzonenlose TIMESTAMP).",
+  "Express 5: app.options('*') crasht. app.use(cors(...)) deckt den OPTIONS-Preflight automatisch ab.",
+  "Wir nehmen bcryptjs (reines JS), NICHT bcrypt — bcrypt bräuchte einen nativen Build im Alpine-Container.",
+  "db-seed macht bei jedem dev-Start TRUNCATE … CASCADE → die DB (auch selbst angelegte Accounts) wird zurückgesetzt.",
+  "Zwei verschiedene Admin-Accounts je nach Modus: admin@rezeptshop.de (init.sql, ohne dev) vs. admin@test.de (dummy-daten, dev-Profil).",
+  "purchase_price wird beim Kauf historisiert — spätere Preisänderungen dürfen alte Bestellungen nicht verändern.",
+  "Kaufen (POST /orders) verlangt eine verifizierte E-Mail (403 sonst) — Login geht aber auch unverifiziert.",
+  "JWT_SECRET muss in auth- UND authorization-Service identisch sein (aus derselben .env). Achtung: nur auth prüft Tokens wirklich.",
+  "Gesperrte User können sofort nichts mehr tun, weil /validate den locked-Status bei JEDEM Aufruf live aus der DB liest.",
+  "nginx ist hier nur ein statischer Fileserver (kein Reverse-Proxy) — deshalb ruft der Browser die Backends direkt auf und wir brauchen CORS."
+];
+(function(){
+  var host = document.getElementById("traps");
+  TRAPS.forEach(function(t,i){
+    var el = document.createElement("div");
+    el.className="trap";
+    el.innerHTML = "<span class='tn'>"+(i+1)+"</span><span>"+t+"</span>";
+    host.appendChild(el);
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// 11 · QUIZ
+// ─────────────────────────────────────────────────────────────
+var QUIZ = [
+  {q:"Warum hat der authorization-service KEINEN Host-Port (ist also von außen nicht erreichbar)?",
+   o:["Weil er zu langsam ist","Weil er JWTs nicht prüft und dem übergebenen role vertraut — von außen könnte man sich role:'admin' erschleichen","Weil er keine Datenbank braucht","Aus Versehen — das sollte man fixen"],
+   correct:1,
+   why:"Genau. Er vertraut den Feldern userId/role, die ihm ein anderer Service schickt. Wäre er von außen erreichbar, könnte jeder /grant mit role:'admin' aufrufen und sich Rechte geben."},
+  {q:"Warum brauchen wir überhaupt CORS?",
+   o:["Damit die DB schneller antwortet","Weil das Frontend (:8080) und die Backends (:3001…) verschiedene Origins sind und der Browser das sonst blockiert","Um Passwörter zu verschlüsseln","Damit Docker die Container findet"],
+   correct:1,
+   why:"Richtig. nginx ist kein Reverse-Proxy — der Browser ruft die Backends direkt auf einem anderen Port auf. Die Same-Origin-Policy blockiert das, CORS erlaubt es gezielt."},
+  {q:"Welcher Service stellt JWTs aus und prüft sie (kennt also JWT_SECRET)?",
+   o:["authorization-service","Jeder Service für sich","Nur der auth-service","nginx"],
+   correct:2,
+   why:"Nur der auth-service. Alle anderen schicken das Token per POST /api/auth/validate an ihn — sie prüfen es nicht selbst."},
+  {q:"Was passiert mit der Datenbank bei jedem Start mit --profile dev?",
+   o:["Nichts, die Daten bleiben","Der db-seed macht TRUNCATE … CASCADE und setzt alles auf die Testdaten zurück","Es wird ein Backup erstellt","Die Tabellen werden gelöscht und nicht neu angelegt"],
+   correct:1,
+   why:"Korrekt. Der db-seed-Container leert erst alle Tabellen (TRUNCATE … RESTART IDENTITY CASCADE) und spielt dann dummy-daten.sql ein — auch selbst registrierte Accounts sind weg."},
+  {q:"Warum liefert nginx bei uns die Frontends nur statisch aus (kein Reverse-Proxy)?",
+   o:["nginx kann keinen Reverse-Proxy","Es ist Standard-nginx:alpine ohne eigene Config; der public/-Ordner ist read-only gemountet — bewusst simpel","Weil PostgreSQL das verlangt","Damit CORS nicht nötig ist"],
+   correct:1,
+   why:"Genau. Wir nutzen das Standard-Image ohne nginx.conf. Der Browser spricht die Backends direkt an — deshalb brauchen wir gerade DESHALB CORS."},
+  {q:"Warum werden Ablauf-Zeiten (z.B. Token abgelaufen?) in SQL statt in JavaScript geprüft?",
+   o:["SQL ist schöner","Die DB rechnet in UTC mit zeitzonenlosen TIMESTAMPs — ein JS-Vergleich läge um Stunden daneben","JavaScript kann keine Daten vergleichen","Aus Performance-Gründen"],
+   correct:1,
+   why:"Richtig. Deshalb steht in den Queries expires_at < NOW() — die DB vergleicht konsistent, egal in welcher Zeitzone Node läuft."},
+  {q:"Ein normaler User will ein Produkt anlegen (POST /api/products). Was passiert?",
+   o:["Es klappt, jeder darf Produkte anlegen","inventory fragt authz /check {action:'write'} → nur Admin erlaubt → 403","Der auth-service blockiert es","Es landet im Warenkorb"],
+   correct:1,
+   why:"Korrekt. Produkte lesen darf jeder Eingeloggte, aber Schreiben ist per Regel nur Admins erlaubt — der authorization-service liefert {allowed:false}, inventory antwortet 403."},
+  {q:"Ein Admin sperrt einen User. Wann wirkt die Sperre?",
+   o:["Erst wenn das JWT des Users abläuft (bis zu 24h)","Sofort — /validate prüft locked bei jedem Aufruf live aus der DB","Nie, dafür braucht es Logout","Nach dem nächsten Neustart"],
+   correct:1,
+   why:"Sofort. Weil der auth-service bei jedem /validate den locked-Status frisch aus der DB liest, ist der gesperrte User beim nächsten Request draußen — trotz noch gültigem Token."}
+];
+(function(){
+  var host = document.getElementById("quiz");
+  var answered = 0, correctCount = 0;
+  QUIZ.forEach(function(item, qi){
+    var el = document.createElement("div");
+    el.className="quiz-q";
+    var opts = item.o.map(function(o,oi){
+      return '<button class="opt" data-oi="'+oi+'">'+o+'</button>';
+    }).join("");
+    el.innerHTML =
+      '<div class="qnum">Frage '+(qi+1)+' / '+QUIZ.length+'</div>'+
+      '<h4>'+item.q+'</h4>'+opts+
+      '<div class="quiz-fb"></div>';
+    var buttons = el.querySelectorAll(".opt");
+    var fb = el.querySelector(".quiz-fb");
+    var locked = false;
+    buttons.forEach(function(btn){
+      btn.addEventListener("click", function(){
+        if(locked) return;
+        locked = true;
+        var oi = parseInt(btn.getAttribute("data-oi"),10);
+        var ok = oi===item.correct;
+        buttons.forEach(function(b){
+          b.classList.add("disabled");
+          var bi = parseInt(b.getAttribute("data-oi"),10);
+          if(bi===item.correct) b.classList.add("correct");
+        });
+        if(!ok) btn.classList.add("wrong");
+        fb.className = "quiz-fb show " + (ok?"ok":"no");
+        fb.innerHTML = (ok?"✅ Richtig! ":"❌ Nicht ganz. ")+item.why;
+        answered++; if(ok) correctCount++;
+        document.getElementById("quizScore").textContent =
+          "Punktestand: "+correctCount+" / "+answered+" beantwortet"+
+          (answered===QUIZ.length?" — alle Fragen durch! 🎉":"");
+      });
+    });
+    host.appendChild(el);
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// NAV: Scroll-Spy + Mobile-Menü
+// ─────────────────────────────────────────────────────────────
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll("#nav a"));
+  var sections = links.map(function(a){ return document.querySelector(a.getAttribute("href")); });
+  function onScroll(){
+    var pos = window.scrollY + 120, active = 0;
+    for(var i=0;i<sections.length;i++){
+      if(sections[i] && sections[i].offsetTop <= pos) active = i;
+    }
+    links.forEach(function(l,i){ l.classList.toggle("active", i===active); });
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+  onScroll();
+
+  var menuBtn = document.getElementById("menuBtn");
+  var sidebar = document.getElementById("sidebar");
+  if(menuBtn){
+    menuBtn.addEventListener("click", function(){ sidebar.classList.toggle("show"); });
+    links.forEach(function(l){ l.addEventListener("click", function(){ sidebar.classList.remove("show"); }); });
+  }
+})();
+
+// ─────────────────────────────────────────────────────────────
+// Glossar-Tooltips (klick/hover per title-Attribut)
+// ─────────────────────────────────────────────────────────────
+(function(){
+  document.querySelectorAll(".term").forEach(function(t){
+    var tip = t.getAttribute("data-tip");
+    if(tip){ t.setAttribute("title", tip); }
+    t.addEventListener("click", function(){ alert(tip); });
+  });
+})();
+</script>
+</body>
+</html>
