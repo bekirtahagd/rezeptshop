@@ -31,6 +31,14 @@ Docker startet alle Services, die Datenbank und die Frontends automatisch.
 Kein manuelles `npm install` nötig.
 **Ihr müsst docker desktop gestartet haben!!**
 
+> **Hinweis zu den Image-Builds:** Die Backend-Dockerfiles installieren die Abhängigkeiten
+> bewusst mit `npm ci` (nicht `npm install`). `npm ci` ist deterministisch, installiert exakt
+> die in `package-lock.json` festgelegten Versionen und verändert die Lockfile nicht — so sind
+> die Images reproduzierbar, auch wenn Dependencies zwischenzeitlich Updates bekommen haben.
+> Voraussetzung: Jeder Service braucht eine eingecheckte `package-lock.json` (ist vorhanden).
+> Neue Pakete fügt ihr weiterhin lokal mit `npm install <paket>` hinzu (das aktualisiert die
+> Lockfile absichtlich) und committet die geänderte `package-lock.json` mit.
+
 ```bash
 # ⭐ EMPFOHLEN: GESAMTES Projekt starten — alle 5 Services + DB + beide Frontends
 #    + Mailpit + Dummy-Daten + pgAdmin. --build baut die Backend-Images neu

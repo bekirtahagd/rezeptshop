@@ -5,11 +5,13 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Zuerst nur die package-Dateien kopieren — so nutzt Docker den Layer-Cache:
-# npm install läuft nur neu, wenn sich die Abhängigkeiten ändern, nicht bei jeder Code-Änderung.
+# npm ci läuft nur neu, wenn sich die Abhängigkeiten ändern, nicht bei jeder Code-Änderung.
 COPY package*.json ./
 
-# Nur Produktions-Abhängigkeiten installieren (keine devDependencies)
-RUN npm install --omit=dev
+# Nur Produktions-Abhängigkeiten installieren (keine devDependencies).
+# npm ci ist deterministisch: installiert exakt die in package-lock.json festgelegten
+# Versionen und verändert die Lockfile nicht -> reproduzierbare Images.
+RUN npm ci --omit=dev
 
 # Restlichen Quellcode kopieren
 COPY . .
