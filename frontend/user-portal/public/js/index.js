@@ -63,6 +63,9 @@ function renderProducts(products) {
     const soldOut = Number(p.amount) <= 0;
     const card = document.createElement('article');
     card.className = 'product-card';
+    // Ganze Karte ist ein Link zur Detailseite (Bild/Name/Preis etc.).
+    card.setAttribute('role', 'link');
+    card.tabIndex = 0;
     // Produktbild (vom image-assets-nginx) oder schlichter Platzhalter, falls keins gesetzt ist.
     const imgSrc = p.image_url ? SERVICES.images + '/' + p.image_url : '';
     card.innerHTML = `
@@ -78,8 +81,23 @@ function renderProducts(products) {
         ${soldOut ? 'Ausverkauft' : 'In den Warenkorb'}
       </button>
     `;
+    // Klick auf die Karte -> Detailseite. Der "In den Warenkorb"-Button darf NICHT mitnavigieren.
+    const goToDetail = () => {
+      location.href = 'produkt.html?id=' + encodeURIComponent(p.product_id);
+    };
+    card.addEventListener('click', goToDetail);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        goToDetail();
+      }
+    });
+
     if (!soldOut) {
-      card.querySelector('button').addEventListener('click', () => addToCart(p));
+      card.querySelector('button').addEventListener('click', (e) => {
+        e.stopPropagation(); // nicht zur Detailseite navigieren
+        addToCart(p);
+      });
     }
     grid.appendChild(card);
   }
