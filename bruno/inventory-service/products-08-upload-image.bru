@@ -1,0 +1,32 @@
+meta {
+  name: INV - Produktbild hochladen als Admin (200)
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{inventoryBaseUrl}}/api/products/{{newProductId}}/image
+  body: multipartForm
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+body:multipart-form {
+  image: @file(inventory-service/assets/test-image.png)
+}
+
+assert {
+  res.status: eq 200
+  res.body.product_id: isDefined
+  res.body.image_url: isDefined
+}
+
+docs {
+  Lädt ein Produktbild (multipart/form-data, Feld "image") für das in products-04 erstellte
+  Produkt ({{newProductId}}) hoch → 200. Der Response enthält den gespeicherten Dateinamen in
+  image_url. Die Testdatei liegt unter inventory-service/assets/test-image.png (1x1-PNG).
+  products-07 (delete) löscht das Produkt danach wieder inkl. Bilddatei → Suite bleibt idempotent.
+}

@@ -151,6 +151,34 @@ footer {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+/* Produktbild oben in der Karte. Zieht sich über die volle Kartenbreite (negative
+   Margins heben das Karten-Padding auf), einheitliche Höhe für ein ruhiges Raster. */
+.product-card .card-image {
+  margin: -1.25rem -1.25rem 1rem;
+  height: 160px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  overflow: hidden;
+  background-color: #f2efe9;
+}
+
+.product-card .card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Platzhalter, wenn kein Bild hinterlegt ist (oder das Laden fehlschlägt). */
+.product-card .card-image.placeholder::after {
+  content: "🍽";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 2.5rem;
+  opacity: 0.35;
+}
+
 .product-card button {
   margin-top: auto; /* drückt den Button an den unteren Kartenrand */
   padding: 0.5rem 1.25rem;

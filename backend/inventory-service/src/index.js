@@ -4,9 +4,17 @@ require('dotenv').config({ path: require('path').resolve(__dirname, '../../..', 
 
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3003;
+
+// Zielordner für hochgeladene Produktbilder. In Docker ist hier der Repo-Ordner
+// assets/product-images per Bind-Mount eingehängt (siehe docker-compose.yml); der
+// nginx-Container `image-assets` liefert dieselben Dateien read-only aus.
+// Ordner beim Start sicher anlegen (falls er lokal noch nicht existiert).
+const UPLOAD_DIR = process.env.UPLOAD_DIR || '/app/uploads';
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 // CORS: nur die beiden Frontend-Origins erlauben (Browser-Schutz). Wir nutzen Bearer-Tokens
 // im Authorization-Header, keine Cookies → kein credentials-Handling nötig. app.use(cors())

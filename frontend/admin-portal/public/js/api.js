@@ -8,6 +8,9 @@ const SERVICES = {
   inventory: 'http://localhost:3003',
   wishlist: 'http://localhost:3004',
   user: 'http://localhost:3005',
+  // nginx-Container `image-assets` — liefert die hochgeladenen Produktbilder aus.
+  // Vollständige Bild-URL = images + '/' + product.image_url.
+  images: 'http://localhost:8082',
 };
 
 // Preise/Mengen kommen vom Backend als NUMERIC-STRING ("12.50") -> hier sauber formatieren.
@@ -45,8 +48,12 @@ function showToast(text, type = 'info', duration = 3200) {
 //  - wirft bei Fehlerstatus einen Error mit der Backend-Meldung (res.body.error)
 //  - fängt "Server nicht erreichbar" ab (Backend down / falscher Port)
 async function apiFetch(url, { method = 'GET', body, auth = true } = {}) {
+  // FormData (z. B. Datei-Upload) NICHT als JSON behandeln: kein Content-Type setzen
+  // (der Browser setzt multipart/form-data inkl. Boundary selbst) und nicht stringify-en.
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+
   const headers = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  if (body !== undefined && !isFormData) headers['Content-Type'] = 'application/json';
 
   let tokenSent = false;
   if (auth) {
@@ -62,7 +69,7 @@ async function apiFetch(url, { method = 'GET', body, auth = true } = {}) {
     res = await fetch(url, {
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body === undefined ? undefined : (isFormData ? body : JSON.stringify(body)),
     });
   } catch (networkErr) {
     throw new Error('Server nicht erreichbar. Läuft das Backend?');

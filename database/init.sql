@@ -47,6 +47,10 @@ CREATE TABLE products (
     price       NUMERIC(10, 2)  NOT NULL,
     amount      INT             NOT NULL DEFAULT 0,
     category    VARCHAR(100),
+    -- Dateiname des Produktbilds (z. B. "p_3_1712740000000.jpg"). Die Datei selbst liegt im
+    -- Ordner assets/product-images (per Bind-Mount) und wird vom nginx-Container
+    -- `image-assets` ausgeliefert. NULL = kein Bild -> Frontend zeigt Platzhalter.
+    image_url   TEXT,
     created_at  TIMESTAMP       NOT NULL DEFAULT NOW()
 );
 

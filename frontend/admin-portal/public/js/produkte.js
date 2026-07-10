@@ -2,6 +2,30 @@
 
 const tableContainer = document.getElementById('table-container');
 const form = document.getElementById('product-form');
+const imageInput = document.getElementById('p-image');
+const imagePreview = document.getElementById('p-image-preview');
+
+// Vollständige Bild-URL aus dem gespeicherten Dateinamen bauen (image-assets-nginx).
+function imageUrl(filename) {
+  return SERVICES.images + '/' + filename;
+}
+
+// Vorschau setzen (URL eines bereits gespeicherten Bildes oder null zum Ausblenden).
+function showImagePreview(src) {
+  if (src) {
+    imagePreview.src = src;
+    imagePreview.classList.remove('hidden');
+  } else {
+    imagePreview.removeAttribute('src');
+    imagePreview.classList.add('hidden');
+  }
+}
+
+// Sobald der Admin eine Datei auswählt: lokale Vorschau anzeigen (noch nicht hochgeladen).
+imageInput.addEventListener('change', () => {
+  const file = imageInput.files[0];
+  showImagePreview(file ? URL.createObjectURL(file) : null);
+});
 
 function escapeHtml(str) {
   return String(str)
@@ -41,6 +65,9 @@ function renderTable(products) {
       (p) => `
       <tr>
         <td class="num">${p.product_id}</td>
+        <td>${p.image_url
+          ? `<img class="table-thumb" src="${imageUrl(p.image_url)}" alt="${escapeHtml(p.name)}">`
+          : '<span class="table-thumb placeholder">–</span>'}</td>
         <td>${escapeHtml(p.name)}</td>
         <td>${escapeHtml(p.category || '–')}</td>
         <td class="num">${formatPrice(p.price)}</td>
@@ -57,7 +84,7 @@ function renderTable(products) {
     <div class="table-scroll">
       <table class="data-table">
         <thead>
-          <tr><th class="num">ID</th><th>Name</th><th>Kategorie</th><th class="num">Preis</th><th class="num">Bestand</th><th>Aktionen</th></tr>
+          <tr><th class="num">ID</th><th>Bild</th><th>Name</th><th>Kategorie</th><th class="num">Preis</th><th class="num">Bestand</th><th>Aktionen</th></tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
@@ -89,6 +116,10 @@ function startEdit(p) {
   document.getElementById('p-amount').value = p.amount;
   document.getElementById('p-description').value = p.description || '';
 
+  // Datei-Input leeren (kein neues Bild vorausgewählt) und aktuelles Bild als Vorschau zeigen.
+  imageInput.value = '';
+  showImagePreview(p.image_url ? imageUrl(p.image_url) : null);
+
   document.getElementById('form-title').textContent = `Produkt #${p.product_id} bearbeiten`;
   document.getElementById('submit-btn').textContent = 'Speichern';
   document.getElementById('cancel-btn').classList.remove('hidden');
@@ -99,6 +130,7 @@ function startEdit(p) {
 function resetForm() {
   form.reset();
   document.getElementById('product-id').value = '';
+  showImagePreview(null);
   document.getElementById('form-title').textContent = 'Neues Produkt';
   document.getElementById('submit-btn').textContent = 'Anlegen';
   document.getElementById('cancel-btn').classList.add('hidden');
@@ -120,14 +152,31 @@ form.addEventListener('submit', async (e) => {
     amount: Number(document.getElementById('p-amount').value),
   };
 
+  const file = imageInput.files[0];
+
   try {
+    // 1) Produkt-Stammdaten speichern (JSON, wie bisher) und die Produkt-ID ermitteln.
+    let productId = id;
     if (id) {
       await apiFetch(SERVICES.inventory + '/api/products/' + id, { method: 'PUT', body });
       showToast(`Produkt #${id} gespeichert.`, 'ok');
     } else {
       const created = await apiFetch(SERVICES.inventory + '/api/products', { method: 'POST', body });
+      productId = created.product_id;
       showToast(`Produkt „${created.name}" angelegt (#${created.product_id}).`, 'ok');
     }
+
+    // 2) Falls ein Bild gewählt wurde: separat als multipart hochladen.
+    if (file) {
+      const fd = new FormData();
+      fd.append('image', file);
+      await apiFetch(SERVICES.inventory + '/api/products/' + productId + '/image', {
+        method: 'POST',
+        body: fd,
+      });
+      showToast('Bild hochgeladen.', 'ok');
+    }
+
     resetForm();
     loadProducts();
   } catch (err) {

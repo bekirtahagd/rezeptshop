@@ -1,8 +1,39 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const db = require('../config/db');
 const authenticate = require('../middleware/authenticate');
 const { checkPermission, ServiceUnavailableError } = require('../config/services');
+
+// Spaltenliste, die alle Produkt-Endpunkte zurückgeben (inkl. image_url — der Dateiname
+// des Produktbilds, das der nginx-Container `image-assets` ausliefert).
+const PRODUCT_COLUMNS = 'product_id, name, description, price, amount, category, image_url, created_at';
+
+// ── Bild-Upload (multer) ────────────────────────────────────────────────────
+// Zielordner = Repo-Ordner assets/product-images (per Bind-Mount unter /app/uploads).
+const UPLOAD_DIR = process.env.UPLOAD_DIR || '/app/uploads';
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
+  // Dateiname deterministisch pro Upload: p_<produktId>_<timestamp>.<ext>.
+  // Timestamp verhindert Browser-Caching-Probleme beim Ersetzen eines Bildes.
+  filename: (req, file, cb) => {
+    const ext = (path.extname(file.originalname) || '.jpg').toLowerCase();
+    cb(null, `p_${req.params.id}_${Date.now()}${ext}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
+  // Nur echte Bilddateien akzeptieren.
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) return cb(null, true);
+    cb(new Error('Nur Bilddateien sind erlaubt'));
+  },
+});
 
 // Alle Produkt-Endpunkte verlangen ein gültiges JWT (Grundregel).
 router.use(authenticate);
@@ -64,7 +95,7 @@ router.get('/', async (req, res) => {
 
   try {
     const result = await db.query(
-      `SELECT product_id, name, description, price, amount, category, created_at
+      `SELECT ${PRODUCT_COLUMNS}
        FROM products ${where}
        ORDER BY product_id`,
       values
@@ -81,7 +112,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT product_id, name, description, price, amount, category, created_at
+      `SELECT ${PRODUCT_COLUMNS}
        FROM products WHERE product_id = $1`,
       [req.params.id]
     );
@@ -111,7 +142,7 @@ router.post('/', requireProductWrite, async (req, res) => {
     const result = await db.query(
       `INSERT INTO products (name, description, price, amount, category)
        VALUES ($1, $2, $3, $4, $5)
-       RETURNING product_id, name, description, price, amount, category, created_at`,
+       RETURNING ${PRODUCT_COLUMNS}`,
       [name, description || null, price, amount, category || null]
     );
     return res.status(201).json(result.rows[0]);
@@ -151,7 +182,7 @@ router.put('/:id', requireProductWrite, async (req, res) => {
     const result = await db.query(
       `UPDATE products SET ${updates.join(', ')}
        WHERE product_id = $${values.length}
-       RETURNING product_id, name, description, price, amount, category, created_at`,
+       RETURNING ${PRODUCT_COLUMNS}`,
       values
     );
     if (result.rows.length === 0) {
@@ -164,17 +195,74 @@ router.put('/:id', requireProductWrite, async (req, res) => {
   }
 });
 
+// POST /api/products/:id/image  (nur Admin)
+// Lädt ein Produktbild hoch: multer speichert die Datei ins Volume (image-assets liefert sie
+// aus), danach wird der Dateiname in products.image_url abgelegt. Ein evtl. vorhandenes altes
+// Bild wird gelöscht. Feldname des multipart-Uploads: "image".
+// Reihenfolge: erst Admin-Prüfung (requireProductWrite), dann multer — so wird eine Datei von
+// Nicht-Admins gar nicht erst auf die Platte geschrieben.
+router.post('/:id/image', requireProductWrite, (req, res) => {
+  upload.single('image')(req, res, async (uploadErr) => {
+    if (uploadErr) {
+      // multer-Fehler (zu groß / falscher Typ) → 400 statt 500.
+      return res.status(400).json({ error: uploadErr.message });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'Keine Bilddatei übergeben (Feld "image")' });
+    }
+
+    try {
+      // Existiert das Produkt? Und wie hieß das bisherige Bild?
+      const existing = await db.query(
+        'SELECT image_url FROM products WHERE product_id = $1',
+        [req.params.id]
+      );
+      if (existing.rows.length === 0) {
+        // Produkt weg → gerade hochgeladene Datei wieder entfernen (kein Waisen-File).
+        fs.unlink(path.join(UPLOAD_DIR, req.file.filename), () => {});
+        return res.status(404).json({ error: 'Produkt nicht gefunden' });
+      }
+
+      const oldImage = existing.rows[0].image_url;
+
+      const result = await db.query(
+        `UPDATE products SET image_url = $1
+         WHERE product_id = $2
+         RETURNING ${PRODUCT_COLUMNS}`,
+        [req.file.filename, req.params.id]
+      );
+
+      // Altes Bild aufräumen (falls vorhanden und nicht identisch).
+      if (oldImage && oldImage !== req.file.filename) {
+        fs.unlink(path.join(UPLOAD_DIR, oldImage), () => {});
+      }
+
+      return res.status(200).json(result.rows[0]);
+    } catch (err) {
+      console.error('Fehler bei POST /products/:id/image:', err.message);
+      // DB-Fehler → gerade hochgeladene Datei nicht verwaisen lassen.
+      fs.unlink(path.join(UPLOAD_DIR, req.file.filename), () => {});
+      return res.status(500).json({ error: 'Datenbankfehler' });
+    }
+  });
+});
+
 // DELETE /api/products/:id  (INV-4, nur Admin)
 // Warenkorb-/Wunschlisten-Einträge werden per FK CASCADE mitgelöscht;
 // orderpositions behalten die Historie (product_id wird auf NULL gesetzt).
 router.delete('/:id', requireProductWrite, async (req, res) => {
   try {
     const result = await db.query(
-      'DELETE FROM products WHERE product_id = $1 RETURNING product_id',
+      'DELETE FROM products WHERE product_id = $1 RETURNING product_id, image_url',
       [req.params.id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Produkt nicht gefunden' });
+    }
+    // Zugehörige Bilddatei mit entfernen (best effort).
+    const img = result.rows[0].image_url;
+    if (img) {
+      fs.unlink(path.join(UPLOAD_DIR, img), () => {});
     }
     return res.status(200).json({ message: 'Produkt gelöscht' });
   } catch (err) {
