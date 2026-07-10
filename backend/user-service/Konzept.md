@@ -105,3 +105,13 @@ Kollektion `bruno/user-service/`. Login-Helfer (`admin@test.de` → `{{adminToke
 `max@test.de` → `{{token}}`), dann pro Endpunkt Erfolgs- und Fehlerfälle mit echten
 `assert`-Blöcken. Tests idempotent (ohne DB-Reset wiederholbar): zum Testen von delete/lock
 wird jeweils ein Wegwerf-User angelegt und am Ende wieder freigegeben/gelöscht.
+
+---
+
+## Nachträgliche Härtung (Session 12) — Passwort-Validierung bei USER-3
+
+`POST /api/users/admin` prüfte bisher nur, ob `email`/`password` vorhanden sind — anders als
+`/register` im auth-service, das E-Mail-Format und Mindestlänge erzwingt. Ein Admin konnte so
+mit ungültiger Mail oder 1-Zeichen-Passwort angelegt werden. Behoben: dieselben Prüfungen wie
+in `/register` inline ergänzt (`EMAIL_REGEX` + `password.length < 8` → jeweils `400`). Bewusst
+als Kopie der Regeln — die Services teilen keinen Code, nur die DB.

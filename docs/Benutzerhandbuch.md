@@ -19,6 +19,11 @@ Die Anmeldung erfolgt über eine E-Mail-Adresse und ein Passwort. Nach dem Login
 Token im Browser gespeichert; läuft er ab oder wird das Konto gesperrt, wird man automatisch
 zur Anmeldung zurückgeleitet.
 
+> **Login erforderlich:** Der Rezeptshop ist **komplett anmeldepflichtig** — es gibt keinen
+> Gastzugang. Die Anmeldeseite ist die einzige ohne Login erreichbare Seite; auch das bloße
+> Ansehen der Produkte setzt eine Anmeldung voraus. Wer noch kein Konto hat, registriert sich
+> zuerst (siehe 2.1). Das ist eine bewusste Design-Entscheidung, kein fehlender Gastmodus.
+
 ### Test-Accounts (Entwicklungsumgebung)
 
 Passwort überall: **`Test1234!`**
