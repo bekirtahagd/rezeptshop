@@ -51,6 +51,15 @@ CREATE TABLE products (
     -- Ordner assets/product-images (per Bind-Mount) und wird vom nginx-Container
     -- `image-assets` ausgeliefert. NULL = kein Bild -> Frontend zeigt Platzhalter.
     image_url   TEXT,
+    -- Rezept-Informationen. recipe (Zubereitung) und ingredients (Zutaten) sind das
+    -- eigentliche "gekaufte" Rezept: sie werden NICHT auf der Produkt-Detailseite gezeigt,
+    -- sondern erst nach dem Kauf per Bestätigungsmail mitgeschickt (siehe orders.js/mailer.js).
+    -- allergens ist Freitext (z. B. "Gluten, Eier, Milch") und darf öffentlich sein.
+    recipe            TEXT,
+    ingredients       TEXT,
+    allergens         TEXT,
+    prep_time_minutes INT,
+    servings          INT,
     created_at  TIMESTAMP       NOT NULL DEFAULT NOW()
 );
 

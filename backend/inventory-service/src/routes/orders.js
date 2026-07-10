@@ -50,7 +50,7 @@ router.post('/', async (req, res) => {
     const positions = [];
     for (const item of itemsResult.rows) {
       const productResult = await client.query(
-        'SELECT product_id, name, price, amount FROM products WHERE product_id = $1 FOR UPDATE',
+        'SELECT product_id, name, price, amount, ingredients, recipe FROM products WHERE product_id = $1 FOR UPDATE',
         [item.product_id]
       );
       if (productResult.rows.length === 0) {
@@ -69,6 +69,10 @@ router.post('/', async (req, res) => {
         name: product.name,
         purchase_price: product.price, // Preis zum KAUFZEITPUNKT (Historie bleibt korrekt)
         amount: item.quantity,
+        // Rezept-Infos für die Kaufbestätigungsmail (das "gekaufte" Rezept). Werden NICHT
+        // in orderpositions gespeichert und nicht in der Historie zurückgegeben.
+        ingredients: product.ingredients,
+        recipe: product.recipe,
       });
     }
 

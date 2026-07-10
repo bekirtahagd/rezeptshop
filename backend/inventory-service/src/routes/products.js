@@ -9,7 +9,19 @@ const { checkPermission, ServiceUnavailableError } = require('../config/services
 
 // Spaltenliste, die alle Produkt-Endpunkte zurückgeben (inkl. image_url — der Dateiname
 // des Produktbilds, das der nginx-Container `image-assets` ausliefert).
-const PRODUCT_COLUMNS = 'product_id, name, description, price, amount, category, image_url, created_at';
+const PRODUCT_COLUMNS =
+  'product_id, name, description, price, amount, category, image_url, ' +
+  'recipe, ingredients, allergens, prep_time_minutes, servings, created_at';
+
+// recipe (Zubereitung) und ingredients (Zutaten) sind das "gekaufte" Rezept: sie dürfen nur
+// Admins (Produktpflege) sehen und werden sonst erst nach dem Kauf per Mail geliefert. Für
+// normale User werden sie hier aus der Antwort entfernt, damit sie gar nicht erst im Browser
+// landen. allergens/prep_time/servings bleiben öffentlich (Produkt-Detailseite).
+function stripSecretFields(row, role) {
+  if (role === 'admin') return row;
+  const { recipe, ingredients, ...rest } = row;
+  return rest;
+}
 
 // ── Bild-Upload (multer) ────────────────────────────────────────────────────
 // Zielordner = Repo-Ordner assets/product-images (per Bind-Mount unter /app/uploads).
@@ -100,7 +112,7 @@ router.get('/', async (req, res) => {
        ORDER BY product_id`,
       values
     );
-    return res.status(200).json(result.rows);
+    return res.status(200).json(result.rows.map((row) => stripSecretFields(row, req.user.role)));
   } catch (err) {
     console.error('Fehler bei GET /products:', err.message);
     return res.status(500).json({ error: 'Datenbankfehler' });
@@ -119,7 +131,7 @@ router.get('/:id', async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Produkt nicht gefunden' });
     }
-    return res.status(200).json(result.rows[0]);
+    return res.status(200).json(stripSecretFields(result.rows[0], req.user.role));
   } catch (err) {
     console.error('Fehler bei GET /products/:id:', err.message);
     return res.status(500).json({ error: 'Datenbankfehler' });
@@ -129,7 +141,10 @@ router.get('/:id', async (req, res) => {
 // POST /api/products  (INV-3, nur Admin)
 // Legt ein neues Produkt an.
 router.post('/', requireProductWrite, async (req, res) => {
-  const { name, description, price, amount, category } = req.body;
+  const {
+    name, description, price, amount, category,
+    recipe, ingredients, allergens, prep_time_minutes, servings,
+  } = req.body;
 
   if (!name || price === undefined || amount === undefined) {
     return res.status(400).json({ error: 'name, price und amount sind erforderlich' });
@@ -140,10 +155,15 @@ router.post('/', requireProductWrite, async (req, res) => {
 
   try {
     const result = await db.query(
-      `INSERT INTO products (name, description, price, amount, category)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO products
+         (name, description, price, amount, category, recipe, ingredients, allergens, prep_time_minutes, servings)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING ${PRODUCT_COLUMNS}`,
-      [name, description || null, price, amount, category || null]
+      [
+        name, description || null, price, amount, category || null,
+        recipe || null, ingredients || null, allergens || null,
+        prep_time_minutes ?? null, servings ?? null,
+      ]
     );
     return res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -155,7 +175,10 @@ router.post('/', requireProductWrite, async (req, res) => {
 // PUT /api/products/:id  (INV-5, nur Admin)
 // Aktualisiert nur die übergebenen Felder (dynamisches SET).
 router.put('/:id', requireProductWrite, async (req, res) => {
-  const allowedFields = ['name', 'description', 'price', 'amount', 'category'];
+  const allowedFields = [
+    'name', 'description', 'price', 'amount', 'category',
+    'recipe', 'ingredients', 'allergens', 'prep_time_minutes', 'servings',
+  ];
   const updates = [];
   const values = [];
 

@@ -17,7 +17,9 @@ headers {
 body:json {
   {
     "price": 12.50,
-    "amount": 5
+    "amount": 5,
+    "allergens": "Gluten, Eier",
+    "recipe": "1. Aktualisierte Zubereitung."
   }
 }
 
@@ -25,9 +27,11 @@ assert {
   res.status: eq 200
   res.body.price: eq "12.50"
   res.body.amount: eq 5
+  res.body.allergens: eq Gluten, Eier
+  res.body.recipe: eq 1. Aktualisierte Zubereitung.
 }
 
 docs {
-  INV-5: Admin ändert nur die übergebenen Felder (price + amount) des in products-04
-  erstellten Produkts ({{newProductId}}). Andere Felder bleiben unverändert.
+  INV-5: Admin ändert nur die übergebenen Felder (price, amount, allergens, recipe) des in
+  products-04 erstellten Produkts ({{newProductId}}). Andere Felder bleiben unverändert.
 }

@@ -144,6 +144,12 @@ footer {
      immer unten und ist über alle Karten einer Reihe auf gleicher Höhe. */
   display: flex;
   flex-direction: column;
+  cursor: pointer; /* ganze Karte ist ein Link zur Detailseite */
+}
+
+.product-card:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .product-card:hover {
@@ -744,4 +750,124 @@ textarea:focus {
 .card-stock {
   font-size: 0.82rem;
   color: var(--color-text-muted);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Produkt-Detailseite (produkt.html)
+   ───────────────────────────────────────────────────────────── */
+.back-link {
+  margin-bottom: 1rem;
+}
+.back-link a {
+  color: var(--color-primary-dark);
+  text-decoration: none;
+  font-weight: 600;
+}
+.back-link a:hover {
+  text-decoration: underline;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  background-color: var(--color-card);
+  border: 1px solid #eee;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.detail-image {
+  height: 320px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background-color: #f2efe9;
+}
+.detail-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.detail-image.placeholder::after {
+  content: "🍽";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 3.5rem;
+  opacity: 0.35;
+}
+
+.detail-info h2 {
+  margin: 0.25rem 0 0.5rem;
+  color: var(--color-primary-dark);
+}
+.detail-price {
+  font-weight: 700;
+  font-size: 1.4rem;
+  margin: 0.25rem 0;
+}
+.detail-stock {
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
+}
+.detail-desc {
+  margin-bottom: 1rem;
+}
+
+/* Fakten-Liste (Allergene, Zeit, Portionen) */
+.fact-list {
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  padding: 0.75rem 0;
+  margin-bottom: 1rem;
+}
+.fact {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.25rem 0;
+}
+.fact-label {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+/* Hinweis: Rezept gibt es erst nach dem Kauf per Mail */
+.recipe-hint {
+  background-color: #eef3e8;
+  border-left: 3px solid var(--color-primary);
+  padding: 0.6rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.detail-info button {
+  padding: 0.6rem 1.5rem;
+  background-color: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+.detail-info button:hover {
+  background-color: #d6824a;
+}
+.detail-info button.soldout,
+.detail-info button.soldout:hover {
+  background-color: #b4503c;
+  cursor: not-allowed;
+}
+
+/* Auf schmalen Screens einspaltig */
+@media (max-width: 640px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
 }

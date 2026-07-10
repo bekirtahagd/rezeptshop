@@ -17,9 +17,14 @@ assert {
   res.status: eq 200
   res.body.product_id: eq 1
   res.body.name: isDefined
+  res.body.allergens: isDefined
+  res.body.recipe: isUndefined
+  res.body.ingredients: isUndefined
 }
 
 docs {
   INV-1: Einzelnes Produkt per eindeutiger ID. Braucht ein gültiges JWT (login-01 vorher).
   Produkt 1 = "Schoko-Brownies" aus den Dummy-Daten.
+  Mit User-Token werden recipe/ingredients (das "gekaufte" Rezept) ausgeblendet — nur
+  allergens/prep_time/servings sind für normale User sichtbar. Admins bekommen alle Felder.
 }

@@ -39,9 +39,32 @@
             <label for="p-amount">Bestand *</label>
             <input type="number" id="p-amount" step="1" min="0" required>
           </div>
+          <div class="form-group">
+            <label for="p-preptime">Zubereitungszeit (Min.)</label>
+            <input type="number" id="p-preptime" step="1" min="0">
+          </div>
+          <div class="form-group">
+            <label for="p-servings">Portionen</label>
+            <input type="number" id="p-servings" step="1" min="0">
+          </div>
           <div class="form-group full">
             <label for="p-description">Beschreibung</label>
             <input type="text" id="p-description">
+          </div>
+          <div class="form-group full">
+            <label for="p-allergens">Allergene</label>
+            <input type="text" id="p-allergens" placeholder="z. B. Gluten, Eier, Milch">
+            <small class="field-hint">Freitext, am besten kommagetrennt. Wird auf der Produktseite öffentlich angezeigt.</small>
+          </div>
+          <div class="form-group full">
+            <label for="p-ingredients">Zutaten</label>
+            <textarea id="p-ingredients" rows="5" placeholder="Eine Zutat pro Zeile"></textarea>
+            <small class="field-hint">Teil des Rezepts — nur für Käufer sichtbar (per Kaufbestätigungs-Mail), nicht auf der Produktseite.</small>
+          </div>
+          <div class="form-group full">
+            <label for="p-recipe">Zubereitung (Rezept)</label>
+            <textarea id="p-recipe" rows="7" placeholder="Zubereitungsschritte, z. B. nummeriert"></textarea>
+            <small class="field-hint">Wird nur nach dem Kauf per E-Mail mitgeschickt, nicht auf der Produktseite angezeigt.</small>
           </div>
           <div class="form-group full">
             <label for="p-image">Produktbild</label>

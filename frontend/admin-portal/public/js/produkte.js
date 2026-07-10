@@ -115,6 +115,11 @@ function startEdit(p) {
   document.getElementById('p-price').value = p.price;
   document.getElementById('p-amount').value = p.amount;
   document.getElementById('p-description').value = p.description || '';
+  document.getElementById('p-allergens').value = p.allergens || '';
+  document.getElementById('p-ingredients').value = p.ingredients || '';
+  document.getElementById('p-recipe').value = p.recipe || '';
+  document.getElementById('p-preptime').value = p.prep_time_minutes ?? '';
+  document.getElementById('p-servings').value = p.servings ?? '';
 
   // Datei-Input leeren (kein neues Bild vorausgewählt) und aktuelles Bild als Vorschau zeigen.
   imageInput.value = '';
@@ -144,12 +149,20 @@ form.addEventListener('submit', async (e) => {
   clearMsg();
 
   const id = document.getElementById('product-id').value;
+  const prepTimeVal = document.getElementById('p-preptime').value;
+  const servingsVal = document.getElementById('p-servings').value;
   const body = {
     name: document.getElementById('p-name').value.trim(),
     category: document.getElementById('p-category').value.trim(),
     description: document.getElementById('p-description').value.trim(),
     price: Number(document.getElementById('p-price').value),
     amount: Number(document.getElementById('p-amount').value),
+    allergens: document.getElementById('p-allergens').value.trim(),
+    ingredients: document.getElementById('p-ingredients').value.trim(),
+    recipe: document.getElementById('p-recipe').value.trim(),
+    // Zahlen: leer -> null (nicht 0), damit "keine Angabe" erhalten bleibt.
+    prep_time_minutes: prepTimeVal ? Number(prepTimeVal) : null,
+    servings: servingsVal ? Number(servingsVal) : null,
   };
 
   const file = imageInput.files[0];
