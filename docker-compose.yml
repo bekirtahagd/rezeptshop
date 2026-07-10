@@ -135,8 +135,15 @@ services:
       MAIL_USER: ${MAIL_USER}
       MAIL_PASS: ${MAIL_PASS}
       MAIL_FROM: ${MAIL_FROM}
+      # Zielordner für Produktbild-Uploads (multer). Muss auf UPLOAD_DIR im Code passen.
+      UPLOAD_DIR: /app/uploads
     ports:
       - "3003:3003"
+    volumes:
+      # Bild-Speicher als Bind-Mount auf einen echten Repo-Ordner: inventory-service
+      # schreibt hochgeladene Bilder hierhin, image-assets (nginx) liefert dieselben
+      # Dateien read-only aus. Seed-Bilder (seed-*.svg) liegen versioniert im Ordner.
+      - ./assets/product-images:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -217,6 +224,21 @@ services:
     networks:
       - rezeptshop-net
 
+  # Statischer Auslieferungs-Container NUR für Produktbilder. Liefert den Ordner
+  # ./assets/product-images read-only aus (dieselben Dateien, die der inventory-service
+  # per Upload hineinschreibt + die versionierten seed-*.svg). Erreichbar unter
+  # http://localhost:8082/<dateiname>.
+  image-assets:
+    image: nginx:alpine
+    container_name: image-assets
+    restart: unless-stopped
+    volumes:
+      - ./assets/product-images:/usr/share/nginx/html:ro
+    ports:
+      - "8082:80"
+    networks:
+      - rezeptshop-net
+
 # ─────────────────────────────────────────────
 # Netzwerk & Volumes
 # ─────────────────────────────────────────────
@@ -227,3 +249,5 @@ networks:
 
 volumes:
   postgres_data:
+  # Hinweis: Produktbilder liegen NICHT in einem Named-Volume, sondern per Bind-Mount
+  # im Repo-Ordner ./assets/product-images (siehe inventory-service & image-assets).

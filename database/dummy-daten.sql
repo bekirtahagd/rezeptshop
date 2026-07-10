@@ -99,13 +99,16 @@ ON CONFLICT (token) DO NOTHING;
 -- PRODUKTE
 -- Abdeckung: INV-1/2/3/4/5/6/7
 -- ─────────────────────────────────────────────────────────────
-INSERT INTO products (name, description, price, amount, category) VALUES
-  ('Schoko-Brownies',         'Saftige Brownies mit dunkler Schokolade',          4.99,  50, 'Backen'),
-  ('Pasta Carbonara',         'Klassische Carbonara mit Ei und Speck',             3.99,  30, 'Pasta'),
-  ('Veganer Burger',          'Saftiger Burger mit schwarzen Bohnen',              5.99,  20, 'Vegan'),
-  ('Tiramisu',                'Italienisches Tiramisu mit Mascarpone',             4.49,  15, 'Backen'),
-  ('Grüner Smoothie',         'Spinat, Banane, Ingwer und Apfel',                 2.99, 100, 'Vegan'),
-  ('Rindersteak Marinade',    'Würzige Marinade für perfektes Steak',             6.99,   0, 'Fleisch')
+-- image_url = Dateiname im Ordner assets/product-images (per Bind-Mount), den der
+-- image-assets-nginx unter http://localhost:8082/<datei> ausliefert. Die seed-*.svg
+-- sind mitversioniert, daher haben die Dummy-Produkte von Anfang an gültige Bilder.
+INSERT INTO products (name, description, price, amount, category, image_url) VALUES
+  ('Schoko-Brownies',         'Saftige Brownies mit dunkler Schokolade',          4.99,  50, 'Backen',  'brownies.png'),
+  ('Pasta Carbonara',         'Klassische Carbonara mit Ei und Speck',             3.99,  30, 'Pasta',   'carbonara.png'),
+  ('Veganer Burger',          'Saftiger Burger mit schwarzen Bohnen',              5.99,  20, 'Vegan',   'burger.png'),
+  ('Tiramisu',                'Italienisches Tiramisu mit Mascarpone',             4.49,  15, 'Backen',  'tiramisu.png'),
+  ('Grüner Smoothie',         'Spinat, Banane, Ingwer und Apfel',                 2.99, 100, 'Vegan',   'smoothie.png'),
+  ('Rindersteak Marinade',    'Würzige Marinade für perfektes Steak',             6.99,   0, 'Fleisch', 'steak.png')
 ON CONFLICT DO NOTHING;
 
 -- ─────────────────────────────────────────────────────────────

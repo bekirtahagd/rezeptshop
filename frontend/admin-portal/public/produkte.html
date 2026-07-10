@@ -43,6 +43,12 @@
             <label for="p-description">Beschreibung</label>
             <input type="text" id="p-description">
           </div>
+          <div class="form-group full">
+            <label for="p-image">Produktbild</label>
+            <input type="file" id="p-image" accept="image/*">
+            <small class="field-hint">JPG/PNG/WebP, max. 2&nbsp;MB. Beim Anlegen optional; leer lassen behält beim Bearbeiten das aktuelle Bild.</small>
+            <img id="p-image-preview" class="image-preview hidden" alt="Aktuelles Produktbild">
+          </div>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn" id="submit-btn">Anlegen</button>

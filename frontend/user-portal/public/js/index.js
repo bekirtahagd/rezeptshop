@@ -63,7 +63,12 @@ function renderProducts(products) {
     const soldOut = Number(p.amount) <= 0;
     const card = document.createElement('article');
     card.className = 'product-card';
+    // Produktbild (vom image-assets-nginx) oder schlichter Platzhalter, falls keins gesetzt ist.
+    const imgSrc = p.image_url ? SERVICES.images + '/' + p.image_url : '';
     card.innerHTML = `
+      <div class="card-image${imgSrc ? '' : ' placeholder'}">
+        ${imgSrc ? `<img src="${imgSrc}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.parentElement.classList.add('placeholder'); this.remove();">` : ''}
+      </div>
       ${p.category ? `<span class="tag">${escapeHtml(p.category)}</span>` : ''}
       <h3>${escapeHtml(p.name)}</h3>
       <p class="card-desc">${escapeHtml(p.description || '')}</p>

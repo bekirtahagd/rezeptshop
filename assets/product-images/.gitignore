@@ -1,0 +1,11 @@
+# Dieser Ordner ist der zentrale Bild-Speicher für Produkte.
+# Er ist per Bind-Mount eingebunden (siehe docker-compose.yml):
+#   - inventory-service schreibt hochgeladene Bilder hierher (/app/uploads)
+#   - image-assets (nginx) liefert sie read-only aus (http://localhost:8082/<datei>)
+#
+# Zur Laufzeit hochgeladene Produktbilder heißen p_<produktId>_<timestamp>.<ext>
+# und gehören NICHT ins Repo — sie entstehen pro Umgebung neu.
+p_*
+
+# Alles andere (seed-*.svg und diese .gitignore) bleibt bewusst versioniert,
+# damit die Dummy-Daten von Anfang an gültige Bilder haben.
