@@ -74,8 +74,8 @@ async function sendPurchaseConfirmationMail(toEmail, order) {
     from: process.env.MAIL_FROM,
     to: toEmail,
     subject: `Deine Bestellung #${order.order_id} im Rezeptshop`,
-    text: `Vielen Dank für deinen Einkauf! Die Zutaten werden dir im Laufe der nächsten Tage zugestellt!\n\nBestellnummer: ${order.order_id}\n\n${lines.join('\n')}\n\nGesamtsumme: ${Number(order.total).toFixed(2)} €${recipeTextBlock}`,
-    html: `<p>Vielen Dank für deinen Einkauf!</p>
+    text: `Vielen Dank für deinen Einkauf! Die Zutaten werden im Laufe der nächsten Tage zugestellt!\n\nBestellnummer: ${order.order_id}\n\n${lines.join('\n')}\n\nGesamtsumme: ${Number(order.total).toFixed(2)} €${recipeTextBlock}`,
+    html: `<p>Vielen Dank für deinen Einkauf! Die Zutaten werden dir im Laufe der nächsten Tage zugestellt!</p>
            <p>Bestellnummer: <strong>${order.order_id}</strong></p>
            <table>${rowsHtml}</table>
            <p>Gesamtsumme: <strong>${Number(order.total).toFixed(2)} €</strong></p>

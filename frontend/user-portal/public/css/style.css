@@ -119,6 +119,7 @@ footer {
   display: flex;
   flex-direction: column;
   cursor: pointer; /* ganze Karte ist ein Link zur Detailseite */
+  position: relative; /* Anker für den Herz-Button oben rechts */
 }
 
 .product-card:focus-visible {
@@ -837,6 +838,195 @@ textarea:focus {
 .detail-info button.soldout:hover {
   background-color: #b4503c;
   cursor: not-allowed;
+}
+
+/* Warenkorb-Button + Herz nebeneinander */
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Herz-Button (Produkt merken, WUN-2)
+   Weiß mit Kontur = in keiner Liste, rot gefüllt = in mindestens einer.
+   Die Regeln müssen die pauschalen Button-Styles von .product-card button
+   bzw. .detail-info button überschreiben — daher die Klassen-Selektoren
+   (2 Klassen schlagen 1 Klasse + 1 Typ).
+   ───────────────────────────────────────────────────────────── */
+.heart-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.heart-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: #fff;
+  stroke: #8a8079;
+  stroke-width: 1.7;
+  transition: fill 0.15s ease, stroke 0.15s ease;
+}
+
+/* Gemerkt: gefülltes rotes Herz */
+.heart-btn.active svg {
+  fill: #d64550;
+  stroke: #b83b45;
+}
+
+.heart-btn:hover {
+  transform: scale(1.1);
+  background-color: #fff;
+}
+.heart-btn:hover svg {
+  stroke: #d64550;
+}
+
+.heart-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Auf der Karte: über dem Bild, oben rechts.
+   .product-card button (orange, padding, border-radius: 6px, margin-top: auto) ist
+   spezifischer als .heart-btn allein und muss hier explizit zurückgenommen werden —
+   sonst wird aus dem Kreis ein oranges Rechteck mit zerdrücktem Icon. */
+.product-card .heart-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 2;
+  margin-top: 0;
+  padding: 0;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+}
+.product-card .heart-btn:hover {
+  background-color: #fff;
+}
+
+/* Auf der Detailseite: neben dem Warenkorb-Button, gleiche Höhe.
+   Gleiche Zurücknahme wie oben, hier gegen .detail-info button. */
+.detail-info .heart-btn {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 50%;
+  background-color: #fff;
+  border: 1px solid #e2ddd6;
+}
+.detail-info .heart-btn:hover {
+  background-color: #fff;
+}
+.detail-info .heart-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Popover zur Listenauswahl — genau eines pro Seite, wird ans jeweils
+   angeklickte Herz positioniert (absolut zum Dokument).
+   ───────────────────────────────────────────────────────────── */
+.wishlist-popover {
+  position: absolute;
+  z-index: 50;
+  min-width: 220px;
+  max-width: 280px;
+  background-color: var(--color-card);
+  border: 1px solid #e2ddd6;
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+  padding: 0.75rem;
+  cursor: default;
+  text-align: left;
+}
+
+.wishlist-popover[hidden] {
+  display: none;
+}
+
+.wl-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-primary-dark);
+}
+
+.wl-rows {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.wl-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+.wl-row:hover {
+  color: var(--color-primary-dark);
+}
+.wl-row input {
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.wl-empty {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  padding: 0.2rem 0 0.4rem;
+}
+
+/* Neue Liste direkt hier anlegen — spart den Umweg über die Wunschlisten-Seite. */
+.wl-new {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid #eee;
+}
+
+.wl-new input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.88rem;
+}
+
+.wl-new button {
+  flex-shrink: 0;
+  width: 32px;
+  padding: 0;
+  background-color: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+.wl-new button:hover {
+  background-color: var(--color-primary-dark);
+}
+.wl-new button:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 /* ─────────────────────────────────────────────────────────────

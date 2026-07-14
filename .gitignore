@@ -9,6 +9,9 @@ npm-debug.log
 .DS_Store
 Thumbs.db
 
+# Office-Sperrdateien (entstehen, solange eine Datei geöffnet ist)
+~$*
+
 # Claude Code
 .claude/
 CLAUDE.md
