@@ -98,32 +98,6 @@ footer {
     font-size: 0.9rem;
 }
 
-@media (max-width: 600px) {
-  header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  nav a {
-    margin-left: 0;
-    margin-right: 1rem;
-  }
-
-  main {
-    margin: 1.5rem auto;
-  }
-
-  /* Warenkorb: aus einer engen 4-Spalten-Zeile eine 2x2-Anordnung machen */
-  .cart-item {
-    grid-template-columns: 1fr auto;
-  }
-
-  .cart-subtotal {
-    text-align: left;
-  }
-}
-
 .product-grid {
   display: grid;
   /* Fluid: die Spaltenzahl richtet sich automatisch nach der Breite.
@@ -865,9 +839,40 @@ textarea:focus {
   cursor: not-allowed;
 }
 
-/* Auf schmalen Screens einspaltig */
+/* ─────────────────────────────────────────────────────────────
+   Responsive: gesammelt am Dateiende, damit die Overrides IMMER
+   nach den Basisregeln stehen (bei gleicher Spezifität gewinnt die
+   spätere Regel — sonst greifen die Handy-Anpassungen nicht).
+   ───────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
+  /* Produkt-Detailseite auf schmalen Screens einspaltig */
   .detail-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  nav a {
+    margin-left: 0;
+    margin-right: 1rem;
+  }
+
+  main {
+    margin: 1.5rem auto;
+  }
+
+  /* Warenkorb: aus einer engen 4-Spalten-Zeile eine 2x2-Anordnung machen */
+  .cart-item {
+    grid-template-columns: 1fr auto;
+  }
+
+  .cart-subtotal {
+    text-align: left;
   }
 }
