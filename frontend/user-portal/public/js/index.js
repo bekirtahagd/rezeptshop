@@ -77,10 +77,14 @@ function renderProducts(products) {
       <p class="card-desc">${escapeHtml(p.description || '')}</p>
       <p class="card-price">${formatPrice(p.price)}</p>
       <p class="card-stock">${soldOut ? 'Ausverkauft' : 'Auf Lager: ' + p.amount}</p>
-      <button type="button" class="${soldOut ? 'soldout' : ''}" ${soldOut ? 'disabled' : ''}>
+      <button type="button" class="cart-btn ${soldOut ? 'soldout' : ''}" ${soldOut ? 'disabled' : ''}>
         ${soldOut ? 'Ausverkauft' : 'In den Warenkorb'}
       </button>
     `;
+
+    // Herz zum Merken (WUN-2). Liegt über dem Bild, oben rechts. Auch bei
+    // ausverkauften Produkten aktiv — merken darf man sich alles.
+    card.appendChild(createHeartButton(p));
     // Klick auf die Karte -> Detailseite. Der "In den Warenkorb"-Button darf NICHT mitnavigieren.
     const goToDetail = () => {
       location.href = 'produkt.html?id=' + encodeURIComponent(p.product_id);
@@ -94,7 +98,7 @@ function renderProducts(products) {
     });
 
     if (!soldOut) {
-      card.querySelector('button').addEventListener('click', (e) => {
+      card.querySelector('.cart-btn').addEventListener('click', (e) => {
         e.stopPropagation(); // nicht zur Detailseite navigieren
         addToCart(p);
       });
@@ -145,7 +149,12 @@ document.getElementById('search-reset').addEventListener('click', () => {
 
 // ---------- Bootstrap (zuletzt, damit alle Deklarationen oben stehen) ----------
 if (requireLogin()) {
-  renderNav();
-  initCategories();
-  loadProducts();
+  (async () => {
+    renderNav();
+    initCategories();
+    // Wunschlisten VOR den Produkten laden: sonst würden die Herzen erst weiß
+    // gerendert und danach sichtbar auf rot umspringen.
+    await initWishlistHearts();
+    loadProducts();
+  })();
 }

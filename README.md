@@ -4,9 +4,6 @@ Web-Engineering-Gruppenprojekt: ein **Rezept-Webshop** als Microservice-Architek
 fünf Backend-Webservices, zwei getrennten Frontends (Shop & Admin), gemeinsamer
 PostgreSQL-Datenbank — vollständig über **Docker Compose** startbar.
 
-Reines **Vanilla JS/HTML/CSS** im Frontend, **Node.js + Express (CommonJS)** im Backend,
-**JWT**-Authentifizierung, kein Framework, kein Build-Schritt.
-
 ---
 
 ## Schnellstart
@@ -30,29 +27,11 @@ Danach erreichbar:
 Test-Accounts (Passwort überall `Test1234!`): `admin@test.de` (Admin),
 `max@test.de` / `anna@test.de` (User), `tom@test.de` (User, unbestätigt).
 
-Details: [`docs/SETUP.md`](docs/SETUP.md) · Bedienung: [`docs/Benutzerhandbuch.md`](docs/Benutzerhandbuch.md).
+Details: [`docs/SETUP.md`](docs/SETUP.md) · Bedienung: [`docs/Benutzerhandbuch.docx`](docs/Benutzerhandbuch.docx) · Präsentation: [docs/Web-Engineering.pptx](docs/Web-Engineering.pptx).
 
 ---
 
 ## Architektur
-
-```
-            ┌──────────────┐         ┌──────────────┐
-            │ user-portal  │         │ admin-portal │   Vanilla JS (nginx)
-            │  :8080       │         │  :8081       │
-            └──────┬───────┘         └──────┬───────┘
-                   │  HTTP/JWT (REST)       │
-        ┌──────────┴───────────┬────────────┴───────────┬──────────────┐
-        ▼          ▼           ▼            ▼            ▼
-   auth-service  authorization  inventory   wishlist    user-service
-     :3001       -service       -service    -service     :3005
-                  :3002          :3003        :3004
-        └──────────┴───────────┴────────────┴────────────┴──────────────┘
-                                  │
-                          ┌───────▼────────┐
-                          │  PostgreSQL    │  eine gemeinsame DB
-                          └────────────────┘
-```
 
 | Service | Port | Aufgabe |
 |---|---|---|
@@ -61,17 +40,6 @@ Details: [`docs/SETUP.md`](docs/SETUP.md) · Bedienung: [`docs/Benutzerhandbuch.
 | inventory-service | 3003 | Produkte, Suche, Warenkorb, Kauf, Kaufhistorie |
 | wishlist-service | 3004 | Wunschlisten, Produkte, Teilen |
 | user-service | 3005 | Admin: User nachschlagen, sperren, löschen, Admin anlegen |
-
-- **JWT** stellt ausschließlich der `auth-service` aus und validiert sie.
-- **Berechtigungen** prüft ausschließlich der `authorization-service` (alle anderen delegieren
-  per HTTP an `POST /api/authorization/check`).
-- **Eine gemeinsame PostgreSQL-Datenbank** für alle Services.
-
-Mehr: [`docs/Architektur.md`](docs/Architektur.md) (Diagramme) ·
-[`planung/architecture.md`](planung/architecture.md) (Begründung) ·
-ERM: [`docs/ERM.md`](docs/ERM.md) ·
-Datenmodell: [`planung/Strukturen/Datenbankschema.md`](planung/Strukturen/Datenbankschema.md) ·
-Mockups: [`docs/Mockup.md`](docs/Mockup.md).
 
 ---
 
@@ -90,15 +58,34 @@ Produkte ansehen + **Suche** (Name/Kategorie), **Warenkorb**, **Kauf** + **Kaufh
 
 ```
 rezeptshop/
-├── docker-compose.yml          # startet alles
-├── database/                   # init.sql + dummy-daten.sql (Dev-Seed)
-├── backend/                    # 5 Services (je Node.js + Express)
+├── docker-compose.yml          # startet alles (Services, DB, pgAdmin, Mailpit, Frontends)
+├── .env / .env.example         # JWT_SECRET, DB-Zugangsdaten, CORS_ORIGINS
+├── database/
+│   ├── init.sql                # alle 10 Tabellen, laeuft beim ersten Start
+│   └── dummy-daten.sql         # Testdaten, nur mit --profile dev
+├── backend/                    # 5 Services, je Node.js + Express (CommonJS)
+│   ├── auth-service/           # Port 3001
+│   ├── authorization-service/  # Port 3002
+│   ├── inventory-service/      # Port 3003
+│   ├── wishlist-service/       # Port 3004
+│   └── user-service/           # Port 3005
+│       ├── Dockerfile
+│       ├── package.json
+│       └── src/                # index.js, config/, middleware/, routes/, utils/
 ├── frontend/
-│   ├── user-portal/public/     # Shop-Portal (HTML/CSS/JS, nginx-Webroot)
-│   └── admin-portal/public/    # Admin-Portal
-├── bruno/                      # API-Testkollektionen (Bruno)
-├── docs/                       # SETUP, Benutzerhandbuch, ERM, ...
-└── planung/                    # Architektur, Workflows, Strukturen
+│   ├── user-portal/public/     # Shop-Portal — nginx-Webroot
+│   │   ├── *.html              # login, index, produkt, warenkorb,
+│   │   │                       #   bestellungen, wunschliste, confirm, magic
+│   │   ├── css/style.css
+│   │   └── js/                 # api.js + auth.js (Helfer) + je Seite eine Datei
+│   └── admin-portal/public/    # Admin-Portal — nginx-Webroot
+│       ├── *.html              # login, index (Dashboard), produkte, benutzer
+│       ├── css/style.css
+│       └── js/                 # api.js + auth.js + je Seite eine Datei
+├── assets/product-images/      # Produktbilder
+├── bruno/                      # API-Testkollektionen, ein Ordner je Service
+├── docs/                       # SETUP.md, onboarding.html, Praesentation, Mockup, Benutzerhandbuch
+└── planung/                    # Architektur, Git-Workflow, CORS, Strukturen/
 ```
 
 ---

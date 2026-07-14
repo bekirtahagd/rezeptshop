@@ -71,12 +71,18 @@ function renderProduct(p) {
 
         <p class="recipe-hint">🧾 Das vollständige Rezept (Zutaten &amp; Zubereitung) erhältst du nach dem Kauf per E-Mail.</p>
 
-        <button type="button" id="add-btn" class="${soldOut ? 'soldout' : ''}" ${soldOut ? 'disabled' : ''}>
-          ${soldOut ? 'Ausverkauft' : 'In den Warenkorb'}
-        </button>
+        <div class="detail-actions">
+          <button type="button" id="add-btn" class="${soldOut ? 'soldout' : ''}" ${soldOut ? 'disabled' : ''}>
+            ${soldOut ? 'Ausverkauft' : 'In den Warenkorb'}
+          </button>
+        </div>
       </div>
     </div>
   `;
+
+  // Herz zum Merken (WUN-2) neben dem Warenkorb-Button. Anders als dieser bleibt es
+  // auch bei ausverkauften Produkten aktiv — merken darf man sich alles.
+  detail.querySelector('.detail-actions').appendChild(createHeartButton(p));
 
   if (!soldOut) {
     document.getElementById('add-btn').addEventListener('click', () => addToCart(p));
@@ -106,6 +112,10 @@ async function addToCart(product) {
 
 // ---------- Bootstrap ----------
 if (requireLogin()) {
-  renderNav();
-  loadProduct();
+  (async () => {
+    renderNav();
+    // Wunschlisten vor dem Produkt laden, damit das Herz sofort korrekt gefärbt ist.
+    await initWishlistHearts();
+    loadProduct();
+  })();
 }
