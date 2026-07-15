@@ -124,10 +124,61 @@ alle per `git pull` verfügbar.
    > ist der **globale** — den brauchen wir nicht. Unser Environment gehört **zur Collection**
    > und taucht nur im Dropdown oben rechts bei geöffnetem Request auf.
 
+> **Alle Tests auf einmal (CLI, ohne Klicken):** Neben der Desktop-App gibt es die
+> Bruno-CLI. Damit fährt man eine ganze Kollektion in einem Rutsch:
+> ```bash
+> cd rezeptshop/bruno
+> npx @usebruno/cli run mein-service --env local
+> ```
+> Das nutzt dieselben `.bru`-Dateien und dasselbe `local`-Environment wie die Desktop-App.
+
+### 3b-bis. Sonderfall authorization-service — Testen über das `test`-Profil
+
+Der `authorization-service` hat **bewusst kein Host-Port-Mapping** (Port 3002 ist nur im
+Docker-Netz erreichbar, nicht von `localhost` aus — Begründung siehe `docker-compose.yml`).
+Deshalb kann Bruno vom Laptop aus **nicht** an ihn heran; das `local`-Environment läuft für
+diese Kollektion ins Leere.
+
+Lösung: Wir holen den Test-Client **ins Docker-Netz**. In der `docker-compose.yml` steht dazu
+ein `bruno-runner`-Container unter dem eigenen Profil **`test`**. Er erreicht die Services
+über ihre internen Namen (`http://authorization-service:3002` …) — dafür gibt es ein zweites
+Environment **`docker`** (`bruno/environments/docker.bru`).
+
+```bash
+# Voraussetzung: Stack läuft mit Dummy-Daten (Profil dev)
+docker compose --profile dev up -d
+
+# Die 15 authorization-service-Tests aus dem Netz heraus fahren:
+docker compose --profile test run --rm bruno-runner
+
+# Andere Kollektion über die CLI im Netz testen (Command überschreiben):
+docker compose --profile test run --rm bruno-runner run inventory-service --env docker
+```
+
+Der `bruno-runner` startet **nie** beim normalen `docker compose up` (auch nicht bei
+`--profile dev`) — nur bei explizitem `--profile test run`. So bleibt Port 3002 in jeder
+Umgebung geschlossen und der Service ist trotzdem testbar.
+
+> **Merksatz Profile:** `dev` = Entwicklungs-**Dauerläufer** (pgAdmin, Mailpit, Dummy-Daten).
+> `test` = **Einmal-Aufgabe** (Testrunner startet, testet, beendet sich wieder).
+
 ### 3c. .bru-Dateien für deinen Service anlegen
 
 Für jeden Endpoint deines Services eine `.bru`-Datei in `bruno/mein-service/` anlegen.
 Orientiere dich an den bestehenden Dateien in `bruno/authorization-service/`.
+
+**Immer einen `assert`-Block ergänzen** — sonst prüft der Test nichts. Ein Request „läuft
+grün", sobald der Server *überhaupt* antwortet; erst der `assert` vergleicht die Antwort mit
+der Erwartung. Prüfe **nicht nur den Statuscode**, sondern auch den entscheidenden Wert im
+Body (z. B. `res.body.allowed: eq false`) — sonst rutscht genau der Fehlerfall durch, den der
+Test abfangen soll:
+
+```
+assert {
+  res.status: eq 200
+  res.body.allowed: eq false
+}
+```
 
 **Reihenfolge beim Testen beachten:**
 - Erst schreibende Requests (POST, PUT) — legen Testdaten an

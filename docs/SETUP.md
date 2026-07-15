@@ -152,6 +152,46 @@ docker compose --profile dev up postgres mailpit -d
 
 ---
 
+## API-Tests ausführen (Bruno)
+
+Die Testfälle liegen als `.bru`-Dateien in `bruno/` (eine Kollektion pro Service). Voraussetzung:
+Der Stack läuft mit `--profile dev` (Dummy-Daten + Mailpit), sonst fehlen Test-Accounts/Tokens.
+
+**Die 4 offenen Services** (auth, inventory, user, wishlist) — vom Rechner aus, Environment `local`:
+
+```bash
+cd bruno
+npx @usebruno/cli run auth-service --env local
+npx @usebruno/cli run inventory-service --env local
+npx @usebruno/cli run user-service --env local
+npx @usebruno/cli run wishlist-service --env local
+```
+
+**Der authorization-service** — hat bewusst keinen Host-Port, ist also nur aus dem Docker-Netz
+erreichbar. Dafür gibt es das `test`-Profil mit einem Bruno-Container (`bruno-runner`), der die
+Tests von innen fährt:
+
+```bash
+docker compose --profile test run --rm bruno-runner
+```
+
+**Alles in einem Befehl** — Stack hochfahren, dann die authorization-Tests laufen lassen (der
+Runner räumt sich per `--rm` selbst wieder weg, der restliche Stack bleibt oben):
+
+```bash
+# Bash / PowerShell 7
+docker compose --profile dev up -d && docker compose --profile test run --rm bruno-runner
+
+# Windows PowerShell 5.1 (kein &&)
+docker compose --profile dev up -d; if ($?) { docker compose --profile test run --rm bruno-runner }
+```
+
+> **Warum `test run`?** Der `bruno-runner` ist eine **Einmal-Aufgabe** (starten → testen →
+> beenden), deshalb `run` statt `up`, und `--rm` löscht den Wegwerf-Container nach dem Lauf.
+> Das eigene Profil `test` sorgt dafür, dass er beim normalen `docker compose up` nie mitstartet.
+
+---
+
 ## Lokal entwickeln (ohne Docker)
 
 Wenn ihr an einem einzelnen Service arbeitet und Docker nicht starten wollt:

@@ -239,6 +239,46 @@ services:
     networks:
       - rezeptshop-net
 
+  # ─────────────────────────────────────────────
+  # Test-Runner (Profil "test") — NICHT im Normalbetrieb
+  # ─────────────────────────────────────────────
+
+  # Bruno-Testrunner INNERHALB des Docker-Netzes.
+  # Der authorization-service hat BEWUSST kein Host-Port-Mapping (Port 3002 ist nur im
+  # Docker-Netz erreichbar), weil er den ihm übergebenen Feldern (userId/role) vertraut —
+  # von außen offen könnte jeder POST /api/authorization/grant mit role:"admin" aufrufen
+  # und sich Rechte erschleichen. Damit er trotzdem testbar bleibt, holen wir den
+  # Test-Client INS Netz: bruno-runner läuft auf rezeptshop-net und erreicht die Services
+  # über ihre internen Namen (z. B. http://authorization-service:3002) — Environment "docker".
+  # So bleibt Port 3002 in JEDER Umgebung zu.
+  #
+  # Einmal-Aufgabe (startet, testet, beendet sich wieder) → eigenes Profil "test", NICHT
+  # "dev". Beim normalen `docker compose up` (auch `--profile dev`) startet er nie.
+  #
+  # Verwendung — die 15 authorization-service-Tests aus dem Netz heraus fahren:
+  #   docker compose --profile test run --rm bruno-runner
+  # Andere Kollektion testen (Command wird überschrieben):
+  #   docker compose --profile test run --rm bruno-runner run inventory-service --env docker
+  # Voraussetzung: der Stack läuft mit Dummy-Daten (Profil dev), damit die Seed-User/
+  # Permissions vorhanden sind — so wie ihr ihn ohnehin startet.
+  bruno-runner:
+    image: node:20-alpine
+    profiles: ["test"]
+    working_dir: /app
+    volumes:
+      # Die Bruno-Kollektion aus dem Repo direkt in den Container spiegeln.
+      - ./bruno:/app
+    environment:
+      NO_UPDATE_NOTIFIER: "1"
+    # npx lädt die Bruno-CLI beim ersten Lauf; Standard-Command testet den
+    # authorization-service über das interne Netz (--env docker).
+    entrypoint: ["npx", "--yes", "@usebruno/cli"]
+    command: ["run", "authorization-service", "--env", "docker"]
+    depends_on:
+      - authorization-service
+    networks:
+      - rezeptshop-net
+
 # ─────────────────────────────────────────────
 # Netzwerk & Volumes
 # ─────────────────────────────────────────────
