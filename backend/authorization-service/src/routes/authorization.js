@@ -92,4 +92,45 @@ router.post('/grant', async (req, res) => {
   }
 });
 
+// POST /api/authorization/revoke
+// Entfernt eine Custom-Permission aus der permissions-Tabelle (Gegenstück zu /grant).
+// Gleiche Berechtigungsregel wie /grant: nur der Besitzer der Ressource oder ein Admin
+// darf eine Berechtigung entziehen.
+router.post('/revoke', async (req, res) => {
+  const { requesterId, requesterRole, targetUserId, resourceId, resourceType, ownerId } = req.body;
+
+  if (!requesterId || !requesterRole || !targetUserId || !resourceId || !resourceType) {
+    return res.status(400).json({ error: 'Fehlende Pflichtfelder: requesterId, requesterRole, targetUserId, resourceId, resourceType' });
+  }
+
+  const validTypes = ['product', 'user', 'wishlist'];
+  if (!validTypes.includes(resourceType)) {
+    return res.status(400).json({ error: `Ungültiger resourceType. Erlaubt: ${validTypes.join(', ')}` });
+  }
+
+  const isOwner = String(requesterId) === String(ownerId);
+  const isAdmin = requesterRole === 'admin';
+
+  if (!isOwner && !isAdmin) {
+    return res.status(403).json({ error: 'Nur der Besitzer oder ein Admin darf Berechtigungen entziehen' });
+  }
+
+  try {
+    const result = await db.query(
+      `DELETE FROM permissions
+       WHERE user_id = $1 AND resource_type = $2 AND resource_id = $3
+       RETURNING permission_id`,
+      [targetUserId, resourceType, resourceId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Keine solche Berechtigung vorhanden' });
+    }
+    return res.json({ message: 'Permission revoked' });
+  } catch (err) {
+    console.error('DB-Fehler bei /revoke:', err.message);
+    return res.status(500).json({ error: 'Datenbankfehler' });
+  }
+});
+
 module.exports = router;

@@ -690,6 +690,62 @@ textarea:focus {
   width: auto;
 }
 
+/* Abschnitt innerhalb der Aktionen (Bearbeiten / Zugriff verwalten) */
+.action-block {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #f0e9e0;
+}
+
+.action-block:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.action-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.action-block textarea {
+  width: 100%;
+  margin: 0.4rem 0;
+  resize: vertical;
+  font: inherit;
+}
+
+/* Liste der Zugriffsberechtigten */
+.share-list {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+}
+
+.share-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f5f0e8;
+}
+
+.share-row:last-child {
+  border-bottom: none;
+}
+
+.share-user {
+  flex: 1 1 90px;
+  font-weight: 600;
+}
+
+.share-row select {
+  width: auto;
+}
+
 /* Suchleiste auf der Produktseite */
 .search-bar {
   display: flex;
