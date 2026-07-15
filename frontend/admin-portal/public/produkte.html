@@ -83,6 +83,12 @@
 
     <section>
       <h2>Alle Produkte</h2>
+      <!-- Gezielt per ID suchen und direkt ins Bearbeitungsformular springen -->
+      <form id="search-id-form" class="search-id">
+        <input type="number" id="search-id" min="1" step="1" placeholder="Produkt-ID">
+        <button type="submit" class="btn" id="search-id-btn">Suchen &amp; bearbeiten</button>
+      </form>
+      <div id="search-msg"></div>
       <div id="table-container">
         <p>Produkte werden geladen …</p>
       </div>

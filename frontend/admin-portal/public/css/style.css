@@ -702,6 +702,20 @@ textarea:focus {
   width: auto;
 }
 
+/* Gezielte Suche per Produkt-ID */
+.search-id {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 1rem 0;
+  align-items: center;
+}
+
+.search-id input[type="number"] {
+  flex: 0 1 200px;
+  width: auto;
+}
+
 /* Zusatz-Infos in der Produktkarte */
 .card-desc {
   color: var(--color-text-muted);
