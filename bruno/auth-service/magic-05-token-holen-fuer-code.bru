@@ -12,8 +12,10 @@ get {
 script:post-response {
   // Liest den Token aus der letzten Mailpit-Mail und speichert ihn als {{magicCode}}
   // — wird von magic-06 als eingebbarer Code über POST /magic-login verwendet.
+  // Seit dem Frontend-Merge steht der Token in der Mail als magic.html?token=... (nicht
+  // mehr als /magic-login/...) — gleicher Regex wie in magic-02.
   const text = res.body && res.body.Text ? res.body.Text : "";
-  const match = text.match(/magic-login\/([a-f0-9]{64})/);
+  const match = text.match(/token=([a-f0-9]{64})/);
   if (match) {
     bru.setVar("magicCode", match[1]);
   }

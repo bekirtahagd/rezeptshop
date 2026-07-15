@@ -19,3 +19,8 @@ body:json {
     "action": "write"
   }
 }
+
+assert {
+  res.status: eq 200
+  res.body.allowed: eq false
+}

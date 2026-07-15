@@ -19,3 +19,8 @@ body:json {
     "action": "read"
   }
 }
+
+assert {
+  res.status: eq 200
+  res.body.allowed: eq true
+}

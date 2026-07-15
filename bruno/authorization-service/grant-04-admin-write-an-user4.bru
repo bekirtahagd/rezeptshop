@@ -21,3 +21,8 @@ body:json {
     "permission": "read"
   }
 }
+
+assert {
+  res.status: eq 200
+  res.body.message: eq Permission granted
+}

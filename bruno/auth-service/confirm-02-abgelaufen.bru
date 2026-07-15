@@ -1,5 +1,5 @@
 meta {
-  name: CONFIRM - Abgelaufener Token (400)
+  name: CONFIRM - Abgelaufener Token wird abgelehnt (400/404)
   type: http
   seq: 6
 }
@@ -9,10 +9,20 @@ get {
   auth: none
 }
 
-assert {
-  res.status: eq 400
+tests {
+  // Garantie: ein abgelaufener Token bestätigt NIE eine E-Mail.
+  // 400 = Token noch in der DB, als "abgelaufen" abgelehnt.
+  // 404 = der Cleanup-Job (cleanup.js) hat den abgelaufenen Seed-Token beim
+  //        Service-Start bereits entfernt → "Token nicht gefunden".
+  // Beide Wege sind eine gültige Ablehnung; wir prüfen genau das (robust gegen
+  // das Cleanup-Timing), nicht den exakten Statuscode.
+  test("abgelaufener Token wird abgelehnt (400 oder 404)", function () {
+    expect([400, 404]).to.include(res.getStatus());
+  });
 }
 
 docs {
-  Seed-Token confirm-verify-expired (expires_at in der Vergangenheit) → 400 Token abgelaufen.
+  Seed-Token confirm-verify-expired (expires_at in der Vergangenheit).
+  Erwartet: Ablehnung. 400 "Token abgelaufen", falls noch vorhanden; 404 "Token
+  nicht gefunden", falls der Cleanup-Job ihn beim Start schon gelöscht hat.
 }

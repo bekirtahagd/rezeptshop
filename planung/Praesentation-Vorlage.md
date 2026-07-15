@@ -115,13 +115,20 @@ Niemand muss Inhalte neu erfinden — alles existiert schon im Repo:
 - **Was erklären:**
   - `docker compose up` startet **alles**: PostgreSQL, pgAdmin, 5 Services, 2 Frontends.
   - `init.sql` legt beim ersten Start automatisch alle Tabellen an.
-  - **Profile:** Mit `--profile dev` werden zusätzlich die **Dummy-Daten**
-    (`dummy-daten.sql`) geladen — saubere Trennung Demo-/Testdaten von der leeren Basis.
+  - **Profile:** Wir nutzen zwei bewusst getrennte Profile:
+    - `--profile dev` lädt zusätzlich die **Dummy-Daten** (`dummy-daten.sql`) und startet
+      Entwicklungs-**Dauerläufer** wie pgAdmin/Mailpit — saubere Trennung Demo-/Testdaten
+      von der leeren Basis.
+    - `--profile test` startet einen **Bruno-Testrunner im Docker-Netz** (Einmal-Aufgabe:
+      läuft, testet, beendet sich). Nötig, weil der `authorization-service` bewusst keinen
+      Host-Port hat — der Runner testet ihn von *innen*, ohne den Port nach außen zu öffnen.
   - Kurz: zentrale `.env` (JWT-Secret, DB-Zugang) wird von allen Services geteilt.
 - **Wo zeigen:** Einen kompakten Ausschnitt der `docker-compose.yml` (nicht die ganze
   Datei!) — z. B. ein Service-Block + der Profile-Eintrag. Daneben den Startbefehl.
-- **Gezielte Tiefe (1 Highlight):** Den **Profile-Mechanismus** erklären — das ist ein
-  Detail, das zeigt, dass wir Docker bewusst eingesetzt haben.
+- **Gezielte Tiefe (1 Highlight):** Den **Profile-Mechanismus** erklären (`dev` vs. `test`)
+  — das zeigt, dass wir Docker bewusst eingesetzt haben. Bonus-Punkt: der `test`-Runner
+  belegt, dass wir einen bewusst abgeschotteten internen Service trotzdem sauber testen
+  (Sicherheit + Testbarkeit gleichzeitig gelöst).
 
 ### 7 · Vorgehen & Qualität — `[Sprecher: ___]` — ⏱ 3 Min
 - **Ziel:** Zeigen, dass wir als Team **strukturiert** gearbeitet haben (zahlt auf
@@ -130,8 +137,10 @@ Niemand muss Inhalte neu erfinden — alles existiert schon im Repo:
   - **Git-Feature-Branch-Workflow:** `main` ist tabu, alles läuft über Feature-Branches →
     Pull Request → Review → Merge.
   - **Kanban-Board** auf GitHub als Aufgabenübersicht.
-  - **Test-Vorgehen:** Pro Endpoint eine **Bruno**-Testdatei; Workflow „Endpoint bauen →
-    in Bruno testen → nächster Endpoint". Tests sind **idempotent** (beliebig oft wiederholbar).
+  - **Test-Vorgehen:** Pro Endpoint eine **Bruno**-Testdatei mit `assert`-Block (prüft
+    Statuscode **und** Antwort-Body, nicht nur „Server hat geantwortet"); Workflow „Endpoint
+    bauen → in Bruno testen → nächster Endpoint". Tests sind **idempotent** (beliebig oft
+    wiederholbar). ~100 Asserts über alle 5 Services, alle grün.
   - **Dokumentation** wurde mitgepflegt (`docs/`, `planung/`), nicht erst am Ende.
 - **Wo zeigen:** Screenshot vom **Kanban-Board** und/oder einem **Pull Request mit Review**,
   Screenshot einer **Bruno-Kollektion** mit grünen Tests.

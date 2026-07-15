@@ -113,3 +113,47 @@ das Passwort preisgegeben hat.
 - **Optionale Verschärfung im Backend (kein Muss):** Im `register`-Endpoint zusätzlich gegen
   die HaveIBeenPwned-*Range*-API (k-Anonymity) prüfen und kompromittierte Passwörter ablehnen.
   Bewusst als eigene Erweiterung, nicht Teil der Pflichtanforderungen.
+
+---
+
+## 3. authorization-service: alle Bruno-Tests scheitern mit Verbindungsfehler
+
+**Symptom**
+
+Die Bruno-Kollektion `authorization-service` läuft mit `--env local` (Desktop-App oder CLI)
+komplett rot — jeder Request scheitert schon vor jeder Prüfung mit einem Verbindungsfehler
+(`ECONNREFUSED` / „invalid address"). Die anderen vier Kollektionen (`auth`, `inventory`,
+`user`, `wishlist`) funktionieren dagegen normal.
+
+**Ursache**
+
+Das ist **kein Bug**, sondern Absicht. Der `authorization-service` hat in der
+`docker-compose.yml` **bewusst kein Host-Port-Mapping** — Port 3002 ist nur *innerhalb* des
+Docker-Netzes erreichbar, nicht über `localhost`. Grund: Er prüft selbst keine JWTs und
+vertraut den ihm übergebenen Feldern (`userId`/`role`). Wäre 3002 am Host offen, könnte jeder
+direkt `POST /api/authorization/grant` mit `role:"admin"` aufrufen und sich Rechte
+erschleichen. Das `local`-Environment (`http://localhost:3002`) läuft deshalb für diese
+Kollektion ins Leere.
+
+**Lösung: Tests über das `test`-Profil aus dem Docker-Netz heraus fahren**
+
+Wir öffnen den Port **nicht** — stattdessen läuft der Test-Client als Container *im* Netz
+(`bruno-runner`, Profil `test`, Environment `docker`):
+
+```bash
+# Stack mit Dummy-Daten muss laufen (Seed-User/Permissions):
+docker compose --profile dev up -d
+
+# 15 authorization-service-Tests im Netz ausführen:
+docker compose --profile test run --rm bruno-runner
+```
+
+Details siehe `planung/Feature-Workflow.md`, Abschnitt „Sonderfall authorization-service".
+
+**Einordnung**
+
+- Der `bruno-runner` startet **nie** beim normalen `docker compose up` (auch nicht bei
+  `--profile dev`) — nur bei explizitem `--profile test run`. Port 3002 bleibt in jeder
+  Umgebung geschlossen.
+- Die anderen vier Services haben ein Host-Port-Mapping und sind daher weiterhin ganz normal
+  mit `--env local` testbar.
