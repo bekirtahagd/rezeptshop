@@ -72,9 +72,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     });
     showMsg(
       'register-msg',
-      'Registriert! Bitte bestätige deine E-Mail (im Dev: in ' +
-        '<a href="http://localhost:8025" target="_blank" rel="noopener">Mailpit</a>). ' +
-        'Danach kannst du dich oben einloggen.',
+      'Registriert! Du kannst dich jetzt oben einloggen.',
       'ok'
     );
     document.getElementById('register-form').reset();
@@ -99,8 +97,7 @@ document.getElementById('magic-request-form').addEventListener('submit', async (
     showMsg(
       'magic-msg',
       'Falls die E-Mail registriert ist, wurde ein Einmal-Code gesendet. ' +
-        'Hol ihn aus <a href="http://localhost:8025" target="_blank" rel="noopener">Mailpit</a> ' +
-        'und gib ihn unten ein.',
+        'Gib ihn unten ein.',
       'info'
     );
   } catch (err) {
