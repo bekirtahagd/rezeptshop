@@ -398,48 +398,90 @@
 
     <!-- ═══════════ 7. FRONTENDS ═══════════ -->
     <section id="s7">
-      <h2><span class="chip">07</span> Frontends</h2>
-      <p>Prüfungsvorgabe: <b>reines Vanilla JS/HTML/CSS</b>, kein Framework. Beide Portale sind
-      simple statische Webseiten, die per <code>fetch</code> mit den Backends reden.</p>
+      <h2><span class="chip">07</span> Frontends — Datei für Datei</h2>
+      <p>Prüfungsvorgabe: <b>reines Vanilla JS/HTML/CSS</b>, kein Framework, <b>kein Build-Schritt</b>
+      (keine Bundler, kein npm im Frontend). Jede <code>.html</code> lädt ein paar
+      <code>&lt;script&gt;</code>-Tags in fester Reihenfolge — das ist die gesamte „Architektur".
+      Beide Portale sind statische Ordner, die ein nginx ausliefert; die ganze Logik läuft im
+      Browser und redet per <code>fetch</code> mit den Backends.</p>
 
-      <div class="grid two">
-        <div class="card"><b>🛒 user-portal</b> <span class="muted">· :8080</span>
-          <p style="font-size:.88rem">Seiten: <code>index</code> (Produkte+Suche), <code>login</code>
-          (3 Tabs: Login / Registrieren / Magic-Link), <code>warenkorb</code>, <code>bestellungen</code>,
-          <code>wunschliste</code>, <code>magic</code> &amp; <code>confirm</code> (Landing-Pages
-          vor dem Login, lesen <code>?token=</code> aus der URL).</p></div>
-        <div class="card"><b>🛠️ admin-portal</b> <span class="muted">· :8081</span>
-          <p style="font-size:.88rem">Seiten: <code>index/dashboard</code>, <code>login</code>,
-          <code>produkte</code> (anlegen/bearbeiten/löschen), <code>benutzer</code>
-          (suchen/sperren/löschen). Zusätzlich <code>requireAdmin()</code>: prüft die Rolle
-          frisch über <code>/me</code>.</p></div>
+      <div class="grid three">
+        <div class="card"><b>🛒 user-portal · :8080</b><p class="muted" style="margin:4px 0 0;font-size:.86rem">9 Seiten: Shop, Detailseite, Login (3 Tabs), Warenkorb, Bestellungen, Wunschlisten, Magic/Confirm-Landings.</p></div>
+        <div class="card"><b>🛠️ admin-portal · :8081</b><p class="muted" style="margin:4px 0 0;font-size:.86rem">4 Seiten: Dashboard, Login (Admin-only), Produktverwaltung (inkl. Bild-Upload), Benutzerverwaltung.</p></div>
+        <div class="card"><b>🖼️ image-assets · :8082</b><p class="muted" style="margin:4px 0 0;font-size:.86rem">Dritter nginx, liefert nur Produktbilder aus einem Volume. Bild-URL = <code>:8082/&lt;dateiname&gt;</code>.</p></div>
       </div>
 
-      <h3>Die zwei Helfer-Dateien</h3>
-      <div class="acc-static">
-        <div class="card">
-          <b><code>js/api.js</code> — spricht mit den Backends</b>
-          <p style="font-size:.9rem">Enthält eine <code>SERVICES</code>-Map mit den Basis-URLs:
-          auth <code>:3001</code>, inventory <code>:3003</code>, wishlist <code>:3004</code>, user
-          <code>:3005</code>. <b>Der authorization-service fehlt hier bewusst</b> — das Frontend
-          spricht ihn nie direkt an (er ist rein intern!). Die Funktion <code>apiFetch</code>
-          hängt automatisch den <code>Authorization: Bearer &lt;token&gt;</code>-Header an. Kommt
-          bei einem Aufruf mit Token ein <code>401</code> zurück, wird das Token gelöscht und der
-          User auf <code>login.html?session=expired</code> umgeleitet.</p>
+      <div class="callout tip"><b>🧭 Wie du dich in einer Session zum Experten einliest</b>
+      Genau in dieser Reihenfolge — von der Ladekette zu den Details:
+      <ol style="margin:8px 0 0;padding-left:20px">
+        <li><b>Eine HTML-Seite von unten lesen</b> (die <code>&lt;script&gt;</code>-Tags) → das verrät die <b>Ladereihenfolge</b> und welche Dateien zusammenspielen.</li>
+        <li><b>Die zwei Helfer zuerst verstehen</b> — <code>api.js</code> (<code>apiFetch</code>) und <code>auth.js</code> (Token). Alles andere baut darauf auf.</li>
+        <li><b>Eine Seiten-JS am „Bootstrap"-Ende anfangen</b> (unten, ab <code>if (requireLogin())</code>) und dem Aufruf-Faden nach oben folgen: load → render → Event → Aktion.</li>
+        <li><b>Einen Klick im Browser mit offenem Netzwerk-Tab (F12)</b> durchspielen und den Request live mit dem Code abgleichen.</li>
+        <li><b>Die 6 wiederkehrenden Muster</b> unten lernen — sie tauchen in <i>jeder</i> Datei auf, dann liest sich der Rest von selbst.</li>
+        <li><b>Zum Schluss</b> die Sonderfälle: das Herz-Popover (<code>wunschliste-herz.js</code>) und der Bild-Upload (<code>produkte.js</code>).</li>
+      </ol></div>
+
+      <h3>Interaktiver Datei-Explorer</h3>
+      <p>Jede Box ist eine echte Datei. <b>Klick sie an</b>, um rechts Aufgabe, Ladeposition,
+      genutzte Endpunkte und die wichtigsten Funktionen zu sehen.</p>
+      <div class="arch-wrap">
+        <div class="arch-grid" id="feGrid">
+          <div class="arch-lbl">Geteilte Helfer · in JEDER Seite (je Portal eine eigene Kopie)</div>
+          <div class="arch-row" id="feRow-shared"></div>
+          <div class="arch-lbl">user-portal · public/ · Seiten (HTML + gleichnamige JS)</div>
+          <div class="arch-row" id="feRow-user"></div>
+          <div class="arch-lbl">admin-portal · public/ · Seiten</div>
+          <div class="arch-row" id="feRow-admin"></div>
+          <div class="arch-lbl">Styling &amp; Assets</div>
+          <div class="arch-row" id="feRow-asset"></div>
         </div>
-        <div class="card">
-          <b><code>js/auth.js</code> — verwaltet das Login</b>
-          <p style="font-size:.9rem">Speichert das Token im <span class="term" data-tip="localStorage = ein kleiner Speicher im Browser, der Daten auch nach dem Schließen des Tabs behält. Wir legen dort das Login-Token ab (Schlüssel 'token').">localStorage</span>
-          (Schlüssel <code>token</code>). Funktionen: <code>requireLogin()</code> (schützt Seiten),
-          <code>logout()</code>, <code>currentUser()</code> (holt &amp; cached <code>/me</code>).
-          Das admin-portal hat zusätzlich <code>requireAdmin()</code>.</p>
+        <div class="detail-panel" id="feDetail">
+          <h4>👈 Datei anklicken</h4>
+          <p class="muted">Wähle links eine Datei, um Details, Ladeposition und genutzte Endpunkte zu sehen.</p>
         </div>
       </div>
-      <div class="callout info"><b>nginx macht hier fast nichts</b>
-      Beide Portale werden von einem Standard-<code>nginx:alpine</code> nur als statische Dateien
-      ausgeliefert (der <code>public/</code>-Ordner ist read-only reingemountet). <b>Kein
-      Reverse-Proxy</b> — deshalb ruft der Browser die Backends direkt auf, und deshalb brauchen
-      wir CORS (siehe Lexikon).</div>
+
+      <h3>Die Ladekette einer Seite</h3>
+      <p>Reihenfolge ist alles: Jede Datei benutzt Funktionen der davor geladenen. Deshalb steht die
+      Seiten-JS immer <b>zuletzt</b>. Beispiel <code>index.html</code> (Shop):</p>
+      <div class="flow-stage" style="justify-content:flex-start">
+        <div class="fnode done">api.js<br><span class="muted" style="font-weight:400">apiFetch, formatPrice, showToast</span></div>
+        <div class="fnode done">auth.js<br><span class="muted" style="font-weight:400">getToken, requireLogin, currentUser</span></div>
+        <div class="fnode done">wunschliste-herz.js<br><span class="muted" style="font-weight:400">createHeartButton</span></div>
+        <div class="fnode on">index.js<br><span class="muted" style="font-weight:400">Seiten-Logik, ruft alle davor auf</span></div>
+      </div>
+      <p class="muted" style="font-size:.86rem">Kein <code>import</code>, keine Module: Alle Skripte teilen sich denselben globalen Namensraum. <code>index.js</code> darf <code>apiFetch()</code> und <code>requireLogin()</code> nur deshalb aufrufen, weil sie vorher als globale Funktionen definiert wurden. Auf Seiten ohne Herz (z.&nbsp;B. <code>warenkorb.html</code>) fehlt das dritte Skript.</p>
+
+      <h3>Die 6 Muster, die überall wiederkehren</h3>
+      <p>Wer diese sechs Mechanismen kennt, versteht jede Frontend-Datei. Klick zum Aufklappen.</p>
+      <div id="fePatterns"></div>
+
+      <h3>Seiten-Landkarte</h3>
+      <p>Jede Seite, ihre JS-Datei und was sie beim Laden tut.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Seite</th><th>JS</th><th>Schutz</th><th>Was passiert beim Laden</th></tr></thead>
+        <tbody id="fePagesBody"></tbody>
+      </table></div>
+
+      <div class="grid two" style="margin-top:16px">
+        <div class="callout info"><b>nginx ist nur ein Fileserver</b>
+        Alle drei Container (user, admin, image-assets) sind Standard-<code>nginx:alpine</code> ohne
+        eigene Config; der <code>public/</code>-Ordner ist read-only reingemountet. <b>Kein
+        Reverse-Proxy</b> → der Browser ruft die Backends direkt auf <code>:3001…:3005</code> auf →
+        genau deshalb brauchen wir CORS (siehe Lexikon).</div>
+        <div class="callout warn"><b>Zwei Kopien der Helfer</b>
+        <code>api.js</code> und <code>auth.js</code> existieren <b>je Portal getrennt</b>
+        (kein geteilter Ordner, da zwei nginx-Container). Fast identisch — nur <code>auth.js</code>
+        im Admin hat zusätzlich <code>requireAdmin()</code>. <b>Achtung:</b> Änderst du einen Helfer,
+        musst du beide Kopien anfassen.</div>
+      </div>
+      <div class="callout"><b>🔒 Der authorization-service fehlt in <code>SERVICES</code> — mit Absicht</b>
+      Die <code>SERVICES</code>-Map kennt nur auth, inventory, wishlist, user und images. Der
+      <b>authorization-service</b> steht bewusst nicht drin: Das Frontend spricht ihn <b>nie</b>
+      direkt an — Berechtigungen prüfen ausschließlich die Backends intern. Sichtbare Sicherheit im
+      Frontend (<code>requireAdmin()</code>, versteckte Buttons) ist nur Komfort; die <b>echte</b>
+      Prüfung passiert immer serverseitig.</div>
     </section>
 
     <!-- ═══════════ 8. LOSLEGEN ═══════════ -->
@@ -770,6 +812,224 @@ var SERVICES = [
       '<div class="body"><ul style="margin:12px 0 0;padding-left:18px">'+li+'</ul></div>';
     el.querySelector("button").addEventListener("click", function(){ el.classList.toggle("open"); });
     host.appendChild(el);
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// 7 · FRONTEND — Datei-Explorer, Muster, Seiten-Landkarte
+// ─────────────────────────────────────────────────────────────
+var FE_FILES = {
+  // ---- geteilte Helfer ----
+  "api.js":{t:"js/api.js",grp:"shared",tag:"port",tagtxt:"in jeder Seite · 1. Skript",role:"Netzwerk-Fundament",
+    load:"Wird als ALLERERSTES geladen — alle anderen Skripte brauchen seine Funktionen.",
+    d:"Das Tor zu den Backends. Definiert die SERVICES-Map (auth :3001, inventory :3003, wishlist :3004, user :3005, images :8082 — der authorization-service fehlt bewusst) und den zentralen fetch-Wrapper apiFetch(url, {method, body, auth}).",
+    fns:["apiFetch(): hängt automatisch 'Authorization: Bearer <token>' an (außer auth:false), setzt Content-Type nur bei JSON (FormData bleibt multipart), parst JSON, wirft bei Fehler einen Error mit der Backend-Meldung (data.error).",
+      "Kritische Sonderregel: kommt bei einem Aufruf MIT Token ein 401 zurück → clearToken() + Weiterleitung auf login.html?session=expired (Session-Ablauf). Ein 401 OHNE Token (falsches Passwort) bleibt beim Aufrufer.",
+      "formatPrice(): NUMERIC-String '12.50' vom Backend → '12,50 €'.",
+      "showToast(text, type): kurze Einblendung unten rechts (ok/error/info), nutzt textContent → kein HTML-Injection-Risiko."],
+    eps:["— (stellt nur das Werkzeug bereit)"]},
+  "auth.js":{t:"js/auth.js",grp:"shared",tag:"port",tagtxt:"in jeder Seite · 2. Skript",role:"Login-/Token-Verwaltung",
+    load:"Direkt nach api.js — es benutzt apiFetch, und api.js benutzt umgekehrt getToken (globaler Namensraum macht's möglich).",
+    d:"Verwaltet den Login-Zustand im Browser. Das JWT liegt im localStorage unter dem Schlüssel 'token' (überlebt Tab-Schließen). Kein Cookie — das Token reist im Header.",
+    fns:["getToken/setToken/clearToken: localStorage-Zugriff.",
+      "requireLogin(): Seitenschutz — ohne Token sofort weiter zu login.html. Steht am Anfang jeder geschützten Seiten-JS.",
+      "currentUser(): holt GET /me und CACHET das Ergebnis pro Seitenaufruf (_cachedUser), damit nicht jede Funktion neu /me ruft.",
+      "logout(): POST /logout (Token auf die Blacklist), dann lokal löschen und zurück zum Login — auch wenn der Server-Call fehlschlägt.",
+      "renderNav(): zeigt E-Mail + eigene User-ID (#id) und einen Logout-Button. Die ID braucht man zum Teilen von Wunschlisten.",
+      "ADMIN-EXTRA: die admin-Kopie hat zusätzlich requireAdmin() — prüft die Rolle FRISCH über /me; Nicht-Admins → login.html?denied=1."],
+    eps:["GET /api/auth/me","POST /api/auth/logout"]},
+
+  // ---- user-portal ----
+  "index":{t:"index.html + index.js",grp:"user",tag:"port",tagtxt:"user · Startseite",role:"Shop-Übersicht (INV-2, INV-6)",
+    load:"Skripte: api.js → auth.js → wunschliste-herz.js → index.js.",
+    d:"Produktkatalog mit Suche. Baut das Kategorie-Dropdown einmalig aus allen Produkten (distinct). Rendert Produktkarten mit Bild (oder Platzhalter), Preis, Bestand, Herz-Button und 'In den Warenkorb'.",
+    fns:["Ganze Karte = Link zur Detailseite (produkt.html?id=). Der Warenkorb-Button nutzt stopPropagation, um NICHT mitzunavigieren.",
+      "addToCart(): liest erst den Korb, rechnet Menge+1, POSTet die ABSOLUTE Menge (Backend SETZT, addiert nicht). 409 = Bestand überschritten → Toast.",
+      "initWishlistHearts() wird VOR loadProducts() awaited, sonst würden Herzen weiß gerendert und sichtbar auf rot umspringen.",
+      "escapeHtml() auf allen DB-Feldern (Name/Beschreibung) → XSS-Schutz."],
+    eps:["GET /api/products(?name=&category=)","GET /api/cart","POST /api/cart"]},
+  "produkt":{t:"produkt.html + produkt.js",grp:"user",tag:"port",tagtxt:"user · Detailseite",role:"Ein Produkt (INV-1)",
+    load:"api.js → auth.js → wunschliste-herz.js → produkt.js.",
+    d:"Zeigt EIN Produkt (ID aus ?id= in der URL) groß mit Bild, Fakten (Allergene, Zubereitungszeit, Portionen — nur falls gepflegt), Herz und Warenkorb-Button.",
+    fns:["WICHTIG: Zeigt NICHT das Rezept (Zutaten/Zubereitung). Das Backend liefert diese Geheim-Felder für normale User gar nicht mit (stripSecretFields) — sie kommen erst nach dem Kauf per Mail. Auf der Seite steht nur der Hinweis darauf.",
+      "Gleiche addToCart-Logik wie index.js (absolute Menge).",
+      "Herz bleibt auch bei ausverkauften Produkten aktiv — merken darf man sich alles."],
+    eps:["GET /api/products/:id","GET /api/cart","POST /api/cart"]},
+  "login":{t:"login.html + login.js",grp:"user",tag:"noport",tagtxt:"user · öffentlich",role:"Login / Registrieren / Magic-Link",
+    load:"api.js → auth.js → login.js. KEIN requireLogin — die einzige öffentliche Seite.",
+    d:"Drei Tabs in einer Seite, per JS umgeschaltet (Sektionen zeigen/verstecken). Wer schon ein Token hat, wird sofort in den Shop geschickt.",
+    fns:["Login: POST /login (auth:false) → setToken(data.token) → index.html.",
+      "Registrieren: POST /register → Erfolgsmeldung (kein Auto-Login; erst E-Mail bestätigen fürs Kaufen).",
+      "Magic-Link: POST /magic-link fordert einen Code an; POST /magic-login (E-Mail + Code) → Token. Meldungen sind bewusst neutral (Anti-Enumeration).",
+      "Liest ?session=expired (freundlicher Ablauf-Hinweis)."],
+    eps:["POST /api/auth/login","POST /api/auth/register","POST /api/auth/magic-link","POST /api/auth/magic-login"]},
+  "warenkorb":{t:"warenkorb.html + warenkorb.js",grp:"user",tag:"port",tagtxt:"user · geschützt",role:"Warenkorb + Kasse (INV-6/7)",
+    load:"api.js → auth.js → warenkorb.js (kein Herz).",
+    d:"Zeigt die Positionen mit +/−-Mengensteuerung, Zwischensummen und Gesamtpreis, plus 'Zur Kasse'.",
+    fns:["setQuantity(): +/− setzen die ABSOLUTE Menge (POST /cart). +-Button ist disabled, wenn Menge = Bestand.",
+      "removeItem(): DELETE /cart/:productId (idempotent).",
+      "checkout(): POST /orders → bei Erfolg weiter zu bestellungen.html?neu=<id>. Fehler (leerer Korb 400, unbestätigte E-Mail 403) als Toast; Button wird wieder aktiviert."],
+    eps:["GET /api/cart","POST /api/cart","DELETE /api/cart/:productId","POST /api/orders"]},
+  "bestellungen":{t:"bestellungen.html + bestellungen.js",grp:"user",tag:"port",tagtxt:"user · geschützt",role:"Kaufhistorie (INV-7)",
+    load:"api.js → auth.js → bestellungen.js.",
+    d:"Listet vergangene Bestellungen (neueste zuerst) als Karten mit Positionstabelle. Preis = purchase_price (historisiert, nicht der aktuelle Preis).",
+    fns:["formatDate(): ISO → deutsches Datum/Uhrzeit.",
+      "Zeigt 'Produkt entfernt', falls ein gekauftes Produkt inzwischen gelöscht wurde (product_id → NULL).",
+      "Liest ?neu=<id> → Erfolgs-Banner direkt nach dem Kauf."],
+    eps:["GET /api/orders"]},
+  "wunschliste":{t:"wunschliste.html + wunschliste.js",grp:"user",tag:"port",tagtxt:"user · geschützt",role:"Wunschlisten (WUN-1–4)",
+    load:"api.js → auth.js → wunschliste.js.",
+    d:"Verwaltungs-Seite für Listen: erstellen, umbenennen, Produkte hinzufügen/entfernen, teilen, löschen. Zeigt EIGENE und GETEILTE Listen.",
+    fns:["loadLists(): GET /wishlists, dann pro Liste GET /:id für die Produkte (Promise.all).",
+      "Besitzer-Check im Frontend: isOwner = list.owner_user_id === me.userId → nur der Besitzer sieht Teilen/Löschen. (Die echte Prüfung macht trotzdem das Backend.)",
+      "Teilen: POST /:id/share mit userId + read|write (owner ist NICHT teilbar).",
+      "Löschen: confirm()-Dialog, dann DELETE /:id."],
+    eps:["GET /api/wishlists","GET/POST/PUT/DELETE /api/wishlists/:id","POST /:id/products","POST /:id/share"]},
+  "wunschliste-herz":{t:"js/wunschliste-herz.js",grp:"user",tag:"dev",tagtxt:"user · Zusatz-Skript",role:"Herz-Merken-Popover (WUN-2)",
+    load:"Nach auth.js, VOR index.js/produkt.js. Nur auf Seiten mit Produktkarten geladen.",
+    d:"Der raffinierteste Frontend-Teil. Ein Herz an jeder Produktkarte bedeutet 'liegt in mindestens einer meiner Listen'. Klick öffnet ein Popover mit Checkbox je Liste + Feld für eine neue Liste.",
+    fns:["initWishlistHearts(): baut EINMAL den Zustand (welches Produkt in welcher Liste) aus GET /wishlists + GET /:id — nur EIGENE Listen (bei geteilten könnte 'read' das spätere Hinzufügen mit 403 abweisen). Danach rein lokal aktualisiert, kein Neuladen nach jedem Klick.",
+      "Genau EIN Popover am <body>, das umpositioniert wird (nicht eins pro Karte). positionPopover() klappt bei Platzmangel nach oben auf, begrenzt die Listenhöhe (scrollbar) und fängt die Ränder ab, damit es nie aus dem Viewport ragt.",
+      "setMembership(): optimistisch — POST/DELETE, Checkbox spiegelt den lokalen Zustand; bei Fehler wird das Häkchen zurückgedreht.",
+      "createListAndAdd(): neue Liste anlegen und Produkt gleich hineinlegen, Popover bleibt offen."],
+    eps:["GET /api/wishlists","GET /api/wishlists/:id","POST /:id/products","DELETE /:id/products/:pid","POST /api/wishlists"]},
+  "magic":{t:"magic.html + magic.js",grp:"user",tag:"noport",tagtxt:"user · öffentlich",role:"Magic-Link-Landing (AUTH-5)",
+    load:"api.js → auth.js → magic.js. KEIN requireLogin (pre-auth).",
+    d:"Landingpage für den Link aus der Magic-Mail. Liest ?token=, tauscht ihn per GET /magic-login/:token gegen ein JWT, speichert es und leitet in den Shop.",
+    fns:["Fehler (404 unbekannt / 400 abgelaufen / 403 gesperrt) → Hinweis + Link zum Login."],
+    eps:["GET /api/auth/magic-login/:token"]},
+  "confirm":{t:"confirm.html + confirm.js",grp:"user",tag:"noport",tagtxt:"user · öffentlich",role:"E-Mail-Bestätigung (AUTH-2)",
+    load:"api.js → auth.js → confirm.js. KEIN requireLogin (pre-auth).",
+    d:"Landingpage für den Bestätigungslink aus der Registrierungs-Mail. Liest ?token=, ruft GET /confirm/:token. Stellt KEIN Token aus → danach zur Anmeldung.",
+    fns:["Erfolg → 'E-Mail bestätigt, jetzt anmelden'. Fehler (404/400) → Hinweis + Login-Link."],
+    eps:["GET /api/auth/confirm/:token"]},
+
+  // ---- admin-portal ----
+  "admin-index":{t:"index.html + dashboard.js",grp:"admin",tag:"port",tagtxt:"admin · Dashboard",role:"Admin-Startseite",
+    load:"api.js → auth.js → dashboard.js.",
+    d:"Minimal: dashboard.js ruft nur requireAdmin() und danach renderNav(). Die eigentliche Arbeit passiert auf produkte/benutzer.",
+    fns:["requireAdmin(): kein Token ODER role !== 'admin' → raus zum Login. Async, weil die Rolle frisch über /me kommt."],
+    eps:["GET /api/auth/me"]},
+  "admin-login":{t:"login.html + login.js (admin)",grp:"admin",tag:"noport",tagtxt:"admin · öffentlich",role:"Admin-Login mit Rollen-Gate",
+    load:"api.js → auth.js → login.js.",
+    d:"Wie der User-Login, aber mit Rollen-Prüfung NACH dem Token-Erhalt: kein Admin → Token sofort verwerfen + Fehlermeldung. Liest ?denied=1 (von requireAdmin umgeleitet).",
+    fns:["Nach POST /login: _cachedUser=null, currentUser() neu holen, role prüfen; nur 'admin' kommt zu index.html."],
+    eps:["POST /api/auth/login","GET /api/auth/me"]},
+  "admin-produkte":{t:"produkte.html + produkte.js",grp:"admin",tag:"port",tagtxt:"admin · geschützt",role:"Produktverwaltung (INV-3/4/5)",
+    load:"api.js → auth.js → produkte.js.",
+    d:"Ein Formular (Anlegen/Bearbeiten in einem, per verstecktem product-id umgeschaltet) plus Tabelle aller Produkte mit Bearbeiten/Löschen. Einziges Formular mit ALLEN Feldern inkl. Geheim-Feldern (Zutaten, Rezept) und Bild-Upload.",
+    fns:["Speichern läuft ZWEISTUFIG: (1) Stammdaten als JSON (POST oder PUT), dann (2) — falls eine Datei gewählt wurde — das Bild separat als multipart/FormData an POST /:id/image. Genau dafür lässt apiFetch bei FormData den Content-Type weg.",
+      "Bildvorschau: bei Dateiauswahl lokal via URL.createObjectURL; beim Bearbeiten die bereits gespeicherte Bild-URL.",
+      "Leere Zahlenfelder (Zubereitungszeit/Portionen) → null statt 0, damit 'keine Angabe' erhalten bleibt.",
+      "Löschen mit confirm(); löscht man das gerade bearbeitete Produkt → Formular zurücksetzen."],
+    eps:["GET /api/products","POST /api/products","PUT /api/products/:id","DELETE /api/products/:id","POST /api/products/:id/image"]},
+  "admin-benutzer":{t:"benutzer.html + benutzer.js",grp:"admin",tag:"port",tagtxt:"admin · geschützt",role:"Benutzerverwaltung (USER-1–4)",
+    load:"api.js → auth.js → benutzer.js.",
+    d:"Suche per User-ID (der user-service hat bewusst keine Listen-Route). Zeigt Details und erlaubt Sperren/Entsperren, Löschen, sowie das Anlegen weiterer Admins.",
+    fns:["lookupUser(): GET /api/users/:id → Karte mit Status.",
+      "toggleLock(): PUT /:id/lock bzw. /unlock, danach neu laden. 400 'Admin kann sich nicht selbst sperren' → Toast.",
+      "deleteUser(): confirm() + DELETE /:id.",
+      "Admin anlegen: POST /api/users/admin (409 bei vergebener E-Mail)."],
+    eps:["GET /api/users/:id","PUT /:id/lock","PUT /:id/unlock","DELETE /api/users/:id","POST /api/users/admin"]},
+
+  // ---- assets ----
+  "style.css":{t:"css/style.css (je Portal)",grp:"asset",tag:"port",tagtxt:"pro Portal 1 Datei",role:"Gesamtes Styling",
+    d:"Eine CSS-Datei pro Portal mit :root-Design-Tokens (Farben, Radius). Warm-grünes Rezept-Theme, schlicht, ohne Framework. Enthält Layout, Karten, Formular, Tabelle, Toast, Herz-Popover, Responsive-Regeln.",
+    fns:["Nutzt CSS-Custom-Properties (--color-primary etc.) statt Wiederholung.",
+      "HINWEIS: bindet oben eine Google-Font (Nunito) per @import ein — die EINZIGE externe Ressource des Frontends (die Onboarding-Seite hier ist dagegen komplett offline)."],
+    eps:["—"]},
+  "image-assets":{t:"image-assets (nginx :8082)",grp:"asset",tag:"dev",tagtxt:"eigener Container",role:"Bild-Auslieferung",
+    load:"Kein Skript — ein dritter nginx-Container.",
+    d:"Liefert die hochgeladenen Produktbilder aus einem gemeinsamen Volume aus. Der inventory-service (multer) SCHREIBT die Dateien dorthin, image-assets LIEST sie. Vollständige URL = SERVICES.images + '/' + product.image_url.",
+    fns:["Bild-Upload-Weg: Admin wählt Datei → produkte.js POSTet multipart an inventory → multer speichert ins Volume + trägt Dateinamen in products.image_url → Karten/Detailseite bauen daraus die :8082-URL.",
+      "Fehlt ein Bild oder lädt es nicht (onerror), fällt die Karte auf einen Platzhalter zurück."],
+    eps:["GET :8082/<dateiname> (nur Bilder)"]},
+};
+var FE_GROUPS = {shared:"feRow-shared",user:"feRow-user",admin:"feRow-admin",asset:"feRow-asset"};
+function renderFeDetail(k){
+  var a = FE_FILES[k]; if(!a) return;
+  var p = document.getElementById("feDetail");
+  var fns = (a.fns||[]).map(function(f){return "<li>"+f+"</li>";}).join("");
+  var eps = (a.eps||[]).map(function(e){return "<code style='display:inline-block;margin:2px 4px 2px 0'>"+escapeHtml(e)+"</code>";}).join("");
+  p.innerHTML =
+    '<span class="tag '+a.tag+'">'+a.tagtxt+'</span>'+
+    '<span class="tag" style="background:#eef1f6;color:#5c6472">'+a.role+'</span>'+
+    '<h4>'+a.t+'</h4>'+
+    '<p style="font-size:.9rem">'+a.d+'</p>'+
+    (a.load?'<p class="muted" style="font-size:.82rem"><b>Ladeposition:</b> '+a.load+'</p>':'')+
+    (fns?'<p style="margin:8px 0 2px;font-weight:700;font-size:.82rem">Wichtigste Funktionen</p><ul style="margin:0;padding-left:18px;font-size:.84rem">'+fns+'</ul>':'')+
+    (eps?'<p style="margin:10px 0 2px;font-weight:700;font-size:.82rem">Genutzte Endpunkte</p><div style="font-size:.8rem">'+eps+'</div>':'');
+}
+(function(){
+  Object.keys(FE_FILES).forEach(function(k){
+    var f = FE_FILES[k];
+    var row = document.getElementById(FE_GROUPS[f.grp]);
+    if(!row) return;
+    var b = document.createElement("div");
+    b.className = "box "+(f.grp==="asset"?"data":(f.grp==="shared"?"frontend":"svc"));
+    b.setAttribute("data-fk", k);
+    b.innerHTML = '<span class="bt">'+f.t.split(" ")[0].replace(/\+.*/,"").trim()+'</span><span class="bp">'+f.role+'</span>';
+    row.appendChild(b);
+  });
+  var boxes = document.querySelectorAll("#feGrid .box");
+  boxes.forEach(function(b){
+    b.addEventListener("click", function(){
+      boxes.forEach(function(x){x.classList.remove("active");});
+      b.classList.add("active");
+      renderFeDetail(b.getAttribute("data-fk"));
+    });
+  });
+})();
+
+// Frontend-Muster (Accordion)
+var FE_PATTERNS = [
+  {ic:"📡",t:"apiFetch — ein Wrapper für alle Backend-Aufrufe",
+    d:"KEINE Seite ruft fetch() direkt. Immer apiFetch(url,{method,body,auth}). Es hängt den Bearer-Token an, serialisiert JSON (aber nicht FormData), parst die Antwort und wirft bei Fehlern einen Error mit der Backend-Meldung. Zentral heißt: Token-Handling, Fehlerformat und Session-Ablauf sind an EINER Stelle geregelt."},
+  {ic:"🚪",t:"requireLogin / requireAdmin — Seitenschutz ganz oben",
+    d:"Jede geschützte Seiten-JS beginnt mit if(requireLogin()){…} (User) bzw. requireAdmin().then(ok=>{…}) (Admin, async wegen /me). Ohne gültige Sitzung landet man sofort auf login.html. Das ist NUR Komfort — der echte Schutz sitzt im Backend."},
+  {ic:"🎫",t:"Token im localStorage + automatischer 401-Logout",
+    d:"Das JWT liegt unter localStorage['token']. apiFetch schickt es mit. Lehnt der Server ein mitgeschicktes Token ab (401), räumt apiFetch auf und leitet auf login.html?session=expired. So sieht der User nie eine halb geladene Seite mit kryptischem Fehler."},
+  {ic:"🛡️",t:"escapeHtml — jedes DB-Feld vor dem Einfügen entschärfen",
+    d:"Weil wir mit innerHTML + Template-Strings rendern, wird jeder Wert aus der DB (Produktname, E-Mail, Listenname) durch escapeHtml() geschickt, bevor er ins HTML kommt. Ohne das könnte ein Produktname wie <script>… Code ausführen (XSS). showToast nutzt stattdessen textContent."},
+  {ic:"🔔",t:"showToast — einheitliches Feedback",
+    d:"Erfolg und Fehler melden alle Seiten über showToast(text,'ok'|'error'). Die Einblendung erscheint unten rechts, egal wie weit gescrollt ist, und verschwindet von selbst. Inline-.msg-Boxen werden nur für dauerhaftere Zustände (Ladefehler, Formularhinweise) genutzt."},
+  {ic:"🧮",t:"Warenkorb-Menge ist ABSOLUT, nicht additiv",
+    d:"POST /api/cart SETZT die Menge auf den übergebenen Wert. Deshalb liest das Frontend erst die aktuelle Menge, rechnet +1 und schickt die Summe. Wer das übersieht, wundert sich, warum 'nochmal hinzufügen' die Menge scheinbar überschreibt statt erhöht."},
+];
+(function(){
+  var host = document.getElementById("fePatterns");
+  FE_PATTERNS.forEach(function(x){
+    var el = document.createElement("div");
+    el.className = "acc";
+    el.innerHTML =
+      '<button><span><span class="ic">'+x.ic+'</span> '+x.t+'</span><span class="arw">▶</span></button>'+
+      '<div class="body"><p style="margin:12px 0 0;font-size:.9rem">'+x.d+'</p></div>';
+    el.querySelector("button").addEventListener("click", function(){ el.classList.toggle("open"); });
+    host.appendChild(el);
+  });
+})();
+
+// Seiten-Landkarte
+var FE_PAGES = [
+  ["🛒 index.html","index.js","🔒 Login","Nav + Kategorien + Wunschlisten-Herzen laden, dann Produkte rendern"],
+  ["🔎 produkt.html","produkt.js","🔒 Login","Herzen laden, dann ein Produkt (?id=) anzeigen — ohne Rezept"],
+  ["🔑 login.html","login.js","🌐 offen","3 Tabs; eingeloggt → direkt in den Shop"],
+  ["🛍️ warenkorb.html","warenkorb.js","🔒 Login","Korb laden, Mengen ±, Kasse (POST /orders)"],
+  ["📦 bestellungen.html","bestellungen.js","🔒 Login","Historie laden; ?neu= zeigt Erfolgs-Banner"],
+  ["⭐ wunschliste.html","wunschliste.js","🔒 Login","Eigene + geteilte Listen + Produkte laden"],
+  ["✉️ magic.html","magic.js","🌐 pre-auth","?token= → JWT eintauschen → Shop"],
+  ["✅ confirm.html","confirm.js","🌐 pre-auth","?token= → E-Mail bestätigen → Login"],
+  ["🛠️ admin/index.html","dashboard.js","👑 Admin","Nur requireAdmin() + Nav"],
+  ["🔑 admin/login.html","login.js","🌐 offen","Login + Rollen-Gate (kein Admin → raus)"],
+  ["📋 admin/produkte.html","produkte.js","👑 Admin","Formular + Tabelle; Stammdaten JSON, Bild multipart"],
+  ["👥 admin/benutzer.html","benutzer.js","👑 Admin","Suche per ID; sperren/löschen/Admin anlegen"],
+];
+(function(){
+  var body = document.getElementById("fePagesBody");
+  FE_PAGES.forEach(function(r){
+    var tr = document.createElement("tr");
+    tr.innerHTML = "<td>"+r[0]+"</td><td><code>"+r[1]+"</code></td><td>"+r[2]+"</td><td class='muted' style='font-size:.85rem'>"+r[3]+"</td>";
+    body.appendChild(tr);
   });
 })();
 
