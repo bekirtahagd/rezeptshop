@@ -144,6 +144,31 @@ function resetForm() {
 
 document.getElementById('cancel-btn').addEventListener('click', resetForm);
 
+// ---------- Gezielte Suche per Produkt-ID ----------
+// ID eingeben -> Produkt laden -> direkt ins Bearbeitungsformular springen (startEdit).
+function showSearchMsg(text, type = 'info') {
+  document.getElementById('search-msg').innerHTML = text ? `<div class="msg ${type}">${text}</div>` : '';
+}
+
+document.getElementById('search-id-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const raw = document.getElementById('search-id').value.trim();
+  const id = Number(raw);
+  if (!raw || !Number.isInteger(id) || id < 1) {
+    showSearchMsg('Bitte eine gültige Produkt-ID eingeben.', 'error');
+    return;
+  }
+  showSearchMsg('');
+  try {
+    const product = await apiFetch(SERVICES.inventory + '/api/products/' + id);
+    startEdit(product); // füllt das Formular und scrollt nach oben
+    showToast(`Produkt #${id} zum Bearbeiten geladen.`, 'ok');
+  } catch (err) {
+    // 404 o. ä. -> Formular nicht öffnen, klare Meldung zeigen.
+    showSearchMsg(`Kein Produkt mit ID ${id} gefunden.`, 'error');
+  }
+});
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMsg();

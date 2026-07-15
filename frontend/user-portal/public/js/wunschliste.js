@@ -35,7 +35,8 @@ async function loadLists() {
               () => []
             )
           : [];
-        return { ...detail, shares };
+        // my_permission steckt in der Listen-Antwort (l), nicht im Detail -> mit übernehmen.
+        return { ...l, ...detail, shares };
       })
     );
     renderLists(detailed);
@@ -59,16 +60,19 @@ function renderLists(lists) {
 
 function buildListCard(list) {
   const isOwner = me && Number(list.owner_user_id) === Number(me.userId);
+  // Schreib-Aktionen (Produkte/Beschreibung ändern): Besitzer ODER Empfänger mit 'write'.
+  // Teilen & Löschen bleiben dem Besitzer vorbehalten.
+  const canWrite = isOwner || list.my_permission === 'write';
   const card = document.createElement('article');
   card.className = 'wishlist-card';
 
-  // Produktzeilen
+  // Produktzeilen. "Entfernen" ist eine Schreib-Aktion → nur mit Schreibrecht.
   const productRows = (list.products || [])
     .map(
       (p) => `
       <li class="wishlist-product">
         <span>${escapeHtml(p.name)} <span class="muted">· ${formatPrice(p.price)}</span></span>
-        <button type="button" class="btn danger small" data-remove="${p.product_id}">Entfernen</button>
+        ${canWrite ? `<button type="button" class="btn danger small" data-remove="${p.product_id}">Entfernen</button>` : ''}
       </li>`
     )
     .join('');
@@ -98,7 +102,11 @@ function buildListCard(list) {
   card.innerHTML = `
     <div class="wishlist-head">
       <h3>${escapeHtml(list.name)}</h3>
-      ${isOwner ? '' : `<span class="shared-badge">geteilt · Besitzer #${escapeHtml(list.owner_user_id)}</span>`}
+      ${
+        isOwner
+          ? ''
+          : `<span class="shared-badge">geteilt · Besitzer #${escapeHtml(list.owner_user_id)} · ${canWrite ? 'Schreibzugriff' : 'Lesezugriff'}</span>`
+      }
     </div>
     ${list.description ? `<p class="wishlist-desc">${escapeHtml(list.description)}</p>` : ''}
 
@@ -106,6 +114,9 @@ function buildListCard(list) {
       ${productRows || '<li class="muted">Noch keine Produkte in dieser Liste.</li>'}
     </ul>
 
+    ${
+      canWrite
+        ? `
     <div class="wishlist-add">
       <select data-add-select>${options}</select>
       <button type="button" class="btn small" data-add-btn>Produkt hinzufügen</button>
@@ -142,7 +153,9 @@ function buildListCard(list) {
       </div>`
           : ''
       }
-    </details>
+    </details>`
+        : '<p class="muted read-only-hint">Geteilte Liste – nur Lesezugriff.</p>'
+    }
   `;
 
   bindCardEvents(card, list);

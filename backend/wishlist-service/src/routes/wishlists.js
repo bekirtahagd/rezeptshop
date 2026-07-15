@@ -59,14 +59,16 @@ router.post('/', async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
+    // my_permission: eigene Berechtigungsstufe des Aufrufers auf jede Liste.
+    // Besitzer -> 'owner'; sonst der in permissions hinterlegte Wert ('read'/'write').
+    // So kann das Frontend Lese- von Schreibempfängern unterscheiden.
     const result = await db.query(
-      `SELECT w.list_id, w.owner_user_id, w.name, w.description, w.created_at
+      `SELECT w.list_id, w.owner_user_id, w.name, w.description, w.created_at,
+              CASE WHEN w.owner_user_id = $1 THEN 'owner' ELSE p.permission END AS my_permission
        FROM wishlists w
-       WHERE w.owner_user_id = $1
-          OR EXISTS (
-            SELECT 1 FROM permissions p
-            WHERE p.user_id = $1 AND p.resource_type = 'wishlist' AND p.resource_id = w.list_id
-          )
+       LEFT JOIN permissions p
+         ON p.user_id = $1 AND p.resource_type = 'wishlist' AND p.resource_id = w.list_id
+       WHERE w.owner_user_id = $1 OR p.permission IS NOT NULL
        ORDER BY w.list_id`,
       [req.user.userId]
     );

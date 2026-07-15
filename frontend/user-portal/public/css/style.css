@@ -642,6 +642,12 @@ textarea:focus {
   font-size: 0.9rem;
 }
 
+/* Hinweis auf geteilten Listen ohne Schreibrecht */
+.read-only-hint {
+  margin-top: 0.75rem;
+  font-style: italic;
+}
+
 .wishlist-add {
   display: flex;
   gap: 0.5rem;
