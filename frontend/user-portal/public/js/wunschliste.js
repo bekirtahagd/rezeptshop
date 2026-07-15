@@ -22,14 +22,21 @@ async function loadLists() {
   container.innerHTML = '<p>Wunschlisten werden geladen …</p>';
   try {
     const lists = await apiFetch(SERVICES.wishlist + '/api/wishlists');
-    // Produkte je Liste nachladen (GET /:id liefert die Produkte).
+    // Produkte je Liste nachladen (GET /:id liefert die Produkte) und – nur für eigene
+    // Listen – die Zugriffsliste (GET /:id/shares), damit der Besitzer sieht, wer Zugriff hat.
     const detailed = await Promise.all(
-      lists.map((l) =>
-        apiFetch(SERVICES.wishlist + '/api/wishlists/' + l.list_id).catch(() => ({
-          ...l,
-          products: [],
-        }))
-      )
+      lists.map(async (l) => {
+        const detail = await apiFetch(SERVICES.wishlist + '/api/wishlists/' + l.list_id).catch(
+          () => ({ ...l, products: [] })
+        );
+        const isOwner = me && Number(l.owner_user_id) === Number(me.userId);
+        const shares = isOwner
+          ? await apiFetch(SERVICES.wishlist + '/api/wishlists/' + l.list_id + '/shares').catch(
+              () => []
+            )
+          : [];
+        return { ...detail, shares };
+      })
     );
     renderLists(detailed);
   } catch (err) {
@@ -71,6 +78,23 @@ function buildListCard(list) {
     .map((p) => `<option value="${p.product_id}">${escapeHtml(p.name)}</option>`)
     .join('');
 
+  // Zugriffsliste (nur beim Besitzer gefüllt): pro Berechtigung eine Zeile mit
+  // Stufen-Auswahl (Lesen/Schreiben), "Ändern" und "Entfernen".
+  const sharesHtml = (list.shares || [])
+    .map(
+      (s) => `
+      <li class="share-row" data-share-userid="${escapeHtml(s.user_id)}">
+        <span class="share-user">User #${escapeHtml(s.user_id)}</span>
+        <select data-share-level>
+          <option value="read"${s.permission === 'read' ? ' selected' : ''}>Lesen</option>
+          <option value="write"${s.permission === 'write' ? ' selected' : ''}>Schreiben</option>
+        </select>
+        <button type="button" class="btn small" data-share-update>Ändern</button>
+        <button type="button" class="btn danger small" data-share-remove>Entfernen</button>
+      </li>`
+    )
+    .join('');
+
   card.innerHTML = `
     <div class="wishlist-head">
       <h3>${escapeHtml(list.name)}</h3>
@@ -89,20 +113,29 @@ function buildListCard(list) {
 
     <details class="wishlist-actions">
       <summary>Aktionen</summary>
-      <div class="action-row">
-        <input type="text" data-rename-input value="${escapeHtml(list.name)}">
-        <button type="button" class="btn small" data-rename-btn>Umbenennen</button>
+
+      <div class="action-block">
+        <label class="action-label">Name &amp; Beschreibung bearbeiten</label>
+        <input type="text" data-edit-name value="${escapeHtml(list.name)}" placeholder="Name">
+        <textarea data-edit-desc rows="2" placeholder="Beschreibung (optional)">${escapeHtml(list.description || '')}</textarea>
+        <button type="button" class="btn small" data-edit-btn>Speichern</button>
       </div>
       ${
         isOwner
           ? `
-      <div class="action-row">
-        <input type="number" data-share-user placeholder="User-ID" min="1">
-        <select data-share-type>
-          <option value="read">Lesen</option>
-          <option value="write">Schreiben</option>
-        </select>
-        <button type="button" class="btn small" data-share-btn>Teilen</button>
+      <div class="action-block">
+        <label class="action-label">Zugriff verwalten</label>
+        <ul class="share-list" data-share-list>
+          ${sharesHtml || '<li class="muted">Diese Liste ist noch nicht geteilt.</li>'}
+        </ul>
+        <div class="action-row">
+          <input type="number" data-share-user placeholder="User-ID" min="1">
+          <select data-share-type>
+            <option value="read">Lesen</option>
+            <option value="write">Schreiben</option>
+          </select>
+          <button type="button" class="btn small" data-share-btn>Teilen</button>
+        </div>
       </div>
       <div class="action-row">
         <button type="button" class="btn danger small" data-delete-btn>Liste löschen</button>
@@ -133,12 +166,17 @@ function bindCardEvents(card, list) {
     });
   }
 
-  // Umbenennen
-  const renameBtn = card.querySelector('[data-rename-btn]');
-  if (renameBtn) {
-    renameBtn.addEventListener('click', () => {
-      const name = card.querySelector('[data-rename-input]').value.trim();
-      if (name) renameList(id, name);
+  // Name & Beschreibung bearbeiten
+  const editBtn = card.querySelector('[data-edit-btn]');
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      const name = card.querySelector('[data-edit-name]').value.trim();
+      const description = card.querySelector('[data-edit-desc]').value.trim();
+      if (!name) {
+        showToast('Der Name darf nicht leer sein.', 'error');
+        return;
+      }
+      updateList(id, name, description);
     });
   }
 
@@ -151,6 +189,24 @@ function bindCardEvents(card, list) {
       if (userId) shareList(id, userId, type);
     });
   }
+
+  // Bestehende Zugriffe ändern / entziehen (nur Besitzer)
+  card.querySelectorAll('.share-row').forEach((row) => {
+    const targetUserId = row.dataset.shareUserid;
+
+    const updateBtn = row.querySelector('[data-share-update]');
+    if (updateBtn) {
+      updateBtn.addEventListener('click', () => {
+        const level = row.querySelector('[data-share-level]').value;
+        shareList(id, targetUserId, level);
+      });
+    }
+
+    const removeBtn = row.querySelector('[data-share-remove]');
+    if (removeBtn) {
+      removeBtn.addEventListener('click', () => revokeShare(id, targetUserId));
+    }
+  });
 
   // Löschen (nur Besitzer)
   const delBtn = card.querySelector('[data-delete-btn]');
@@ -204,13 +260,14 @@ async function removeProduct(listId, productId) {
   }
 }
 
-async function renameList(listId, name) {
+async function updateList(listId, name, description) {
   try {
+    // description immer mitschicken: leerer String löscht eine vorhandene Beschreibung.
     await apiFetch(SERVICES.wishlist + '/api/wishlists/' + listId, {
       method: 'PUT',
-      body: { name },
+      body: { name, description },
     });
-    showToast('Liste umbenannt.', 'ok');
+    showToast('Liste gespeichert.', 'ok');
     loadLists();
   } catch (err) {
     showToast(err.message, 'error');
@@ -223,7 +280,22 @@ async function shareList(listId, userId, authorizationType) {
       method: 'POST',
       body: { userId: Number(userId), authorizationType },
     });
-    showToast(`Liste mit User #${userId} geteilt (${authorizationType}).`, 'ok');
+    const label = authorizationType === 'write' ? 'Schreiben' : 'Lesen';
+    showToast(`Zugriff für User #${userId} gesetzt: ${label}.`, 'ok');
+    loadLists();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function revokeShare(listId, userId) {
+  if (!confirm(`Zugriff von User #${userId} auf diese Liste wirklich entziehen?`)) return;
+  try {
+    await apiFetch(SERVICES.wishlist + '/api/wishlists/' + listId + '/share/' + userId, {
+      method: 'DELETE',
+    });
+    showToast(`Zugriff von User #${userId} entzogen.`, 'ok');
+    loadLists();
   } catch (err) {
     showToast(err.message, 'error');
   }

@@ -79,4 +79,22 @@ async function grantPermission(params) {
   return { ok: response.ok, status: response.status };
 }
 
-module.exports = { validateToken, checkPermission, grantPermission, ServiceUnavailableError };
+// Entzieht eine Custom-Permission über den authorization-service (WUN-4 Rechte-Verwaltung).
+// params: { requesterId, requesterRole, targetUserId, resourceId, resourceType, ownerId }
+// Rückgabe: { ok, status } — der Aufrufer entscheidet, wie er status-Codes weiterreicht.
+async function revokePermission(params) {
+  let response;
+  try {
+    response = await fetch(`${AUTHORIZATION_SERVICE_URL}/api/authorization/revoke`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+  } catch (err) {
+    throw new ServiceUnavailableError('authorization-service');
+  }
+
+  return { ok: response.ok, status: response.status };
+}
+
+module.exports = { validateToken, checkPermission, grantPermission, revokePermission, ServiceUnavailableError };

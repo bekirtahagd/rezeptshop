@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const authenticate = require('../middleware/authenticate');
-const { checkPermission, grantPermission, ServiceUnavailableError } = require('../config/services');
+const { checkPermission, grantPermission, revokePermission, ServiceUnavailableError } = require('../config/services');
 
 // Alle Wunschlisten-Endpunkte verlangen ein gültiges JWT (Grundregel).
 router.use(authenticate);
@@ -306,6 +306,80 @@ router.post('/:id/share', async (req, res) => {
       list_id: Number(req.params.id),
       userId: targetUserId,
       authorizationType,
+    });
+  } catch (err) {
+    return handleServiceError(err, res);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// WUN-4 — GET /api/wishlists/:id/shares
+// Listet auf, welche User Zugriff auf diese Liste haben (read/write). Nur der Besitzer
+// oder ein Admin darf das sehen ('owner'-Aktion). Die permissions-Tabelle liegt in
+// derselben DB; wir lesen sie direkt (schreibende Änderungen laufen weiter über den
+// authorization-service).
+// ─────────────────────────────────────────────────────────────
+router.get('/:id/shares', async (req, res) => {
+  try {
+    const list = await loadWishlist(req.params.id);
+    if (!list) return res.status(404).json({ error: 'Wunschliste nicht gefunden' });
+
+    const allowed = await checkPermission({
+      userId: req.user.userId,
+      role: req.user.role,
+      resourceType: 'wishlist',
+      resourceId: req.params.id,
+      ownerId: list.owner_user_id,
+      action: 'owner',
+    });
+    if (!allowed) return res.status(403).json({ error: 'Nur der Besitzer darf die Zugriffsliste sehen' });
+
+    const result = await db.query(
+      `SELECT user_id, permission
+       FROM permissions
+       WHERE resource_type = 'wishlist' AND resource_id = $1
+       ORDER BY user_id`,
+      [req.params.id]
+    );
+    return res.status(200).json(result.rows);
+  } catch (err) {
+    return handleServiceError(err, res);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// WUN-4 — DELETE /api/wishlists/:id/share/:userId
+// Entzieht einem User den Zugriff auf die Liste. Die Berechtigungsprüfung (nur echter
+// Besitzer oder Admin) übernimmt der authorization-service in /revoke.
+// ─────────────────────────────────────────────────────────────
+router.delete('/:id/share/:userId', async (req, res) => {
+  try {
+    const list = await loadWishlist(req.params.id);
+    if (!list) return res.status(404).json({ error: 'Wunschliste nicht gefunden' });
+
+    const result = await revokePermission({
+      requesterId: req.user.userId,
+      requesterRole: req.user.role,
+      targetUserId: req.params.userId,
+      resourceId: req.params.id,
+      resourceType: 'wishlist',
+      ownerId: list.owner_user_id,
+    });
+
+    if (!result.ok) {
+      if (result.status === 403) {
+        return res.status(403).json({ error: 'Nur der Besitzer oder ein Admin darf Zugriffe entziehen' });
+      }
+      if (result.status === 404) {
+        return res.status(404).json({ error: 'Dieser User hat keinen Zugriff auf die Liste' });
+      }
+      return res.status(500).json({ error: 'Zugriff konnte nicht entzogen werden' });
+    }
+
+    return res.status(200).json({
+      message: 'Zugriff entzogen',
+      list_id: Number(req.params.id),
+      userId: Number(req.params.userId),
     });
   } catch (err) {
     return handleServiceError(err, res);
